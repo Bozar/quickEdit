@@ -1,6 +1,5 @@
 fun! s:InitVar()
     let s:pat_com_path = '#(EDIT|TABE):'
-    let s:pat_empty = '^\v\s*$'
     let s:pat_full = '^\v\/(i|a|c|b)$'
     let s:pat_tab = '^\v\/(i|a|c)$'
     let s:pat_back = '^\/b$'
@@ -16,15 +15,15 @@ fun! s:InitVar()
     let s:error_gFile_M0 = 'ERROR: Missing g:fileList[0].'
     let s:error_gFile_W0 = 'ERROR: Incorrect g:fileList[0].'
     let s:error_gFile =
-    \ 'ERROR: Incorrect fileList var, ''g:pathToFileList_quickEdit_tab''.'
+    \ 'ERROR: Incorrect fileList var, ''g:pathToFileList_quickEdit''.'
     let s:error_gPlace_M = 'ERROR: Missing g:placeHolder[]'
 
     let s:note_start = 'NOTE: Check command argument(s).'
     let s:note_gFile_3 = 'NOTE: Check g:filelist[2].'
     let s:note_gFile_F =
-    \ 'NOTE: Check fileList var, ''g:pathToFileList_quickEdit_tab''.'
+    \ 'NOTE: Check fileList var, ''g:pathToFileList_quickEdit''.'
     let s:note_gPlace_F =
-    \ 'NOTE: Check placeHolder var, ''g:pathToPlaceholder_quickEdit_tab''.'
+    \ 'NOTE: Check placeHolder var, ''g:pathToPlaceholder_quickEdit''.'
     let s:note_fileList = 'NOTE: Check fileList.'
 
     let l:echoHead = []
@@ -57,24 +56,25 @@ fun! s:InitVar()
     let l:val_defNewTab = '/c'
     let l:val_defBack = '/B'
 
-    if !exists('g:pathToFileList_quickEdit_tab')
-        \ || !exists('g:pathToFileList_quickEdit_tab[0][0]')
-        \ || !exists('g:pathToFileList_quickEdit_tab[0][1]')
+    if !exists('g:pathToFileList_quickEdit')
+        \ || !exists('g:pathToFileList_quickEdit[0][0]')
+        \ || !exists('g:pathToFileList_quickEdit[0][1]')
 
-        let g:pathToFileList_quickEdit_tab = []
+        let g:pathToFileList_quickEdit = []
         call add(s:errMsg, s:error_gFile_M0)
         call add(s:errMsg, s:note_gFile_F)
         call s:DebugMsg('', s:pathToScript)
 
         let s:defNewTab = l:val_defNewTab
         let s:defBack = l:val_defBack
+        let s:pathToFileList = ''
         return
     endif
-    let s:path_file = copy(g:pathToFileList_quickEdit_tab)
+    let s:path_file = copy(g:pathToFileList_quickEdit)
 
     if exists('s:path_file[1][0]') && exists('s:path_file[1][1]')
-        let l:pathToVar =
-        \ s:CutTrailSlash(s:path_file[1][0]) . '/' . s:path_file[1][1]
+        let l:pathToVar = getText_auto#CutTrailSlash(s:path_file[1][0])
+        \ . '/' . s:path_file[1][1]
         if filereadable(l:pathToVar)
             exe 'source ' . l:pathToVar
         endif
@@ -92,10 +92,10 @@ fun! s:InitVar()
         let s:defBack = l:val_defBack
     endif
 
-    if !exists('g:pathToPlaceholder_quickEdit_tab')
-        let g:pathToPlaceholder_quickEdit_tab = []
+    if !exists('g:pathToPlaceholder_quickEdit')
+        let g:pathToPlaceholder_quickEdit = []
     endif
-    let s:path_place = g:pathToPlaceholder_quickEdit_tab
+    let s:path_place = g:pathToPlaceholder_quickEdit
 
     let l:path = s:EditPath(s:path_file[0][0])
     let s:pathToFileList = l:path . '/' . s:path_file[0][1]
@@ -110,85 +110,36 @@ fun! s:InitVar()
     endif
 endfun
 
-fun! s:OpenFile(stat)
-    if a:stat ==? 'open'
-        if !bufexists(s:pathToFileList)
-            \ || (bufnr('%') != bufnr(s:pathToFileList))
-            wincmd s
-        endif
-        if bufexists(s:pathToFileList)
-            exe 'silent buffer '. bufnr(s:pathToFileList)
-        else
-            exe 'silent e ' . s:pathToFileList
-            call s:ChangeDir()
-        endif
-        let s:cursor = getpos('.')
-
-    elseif a:stat ==? 'close'
-        call setpos('.', s:cursor)
-        if winnr('$') > 1
-            wincmd c
-        endif
-    endif
-endfun
-
 fun! s:Range(keyword)
     let l:pat_start = '^\v\s*\V' . a:keyword . '\v\s+\{\s*$'
     let l:pat_end = '^\v\s*\}\s*$'
-    let l:error = []
 
-    1normal! 0
-    if search(l:pat_start, 'cW')
-        let l:start = line('.')
-    else
-        call add(l:error, s:error_start)
-        call add(l:error, s:note_start)
-    endif
-    if search(l:pat_end, 'cW')
-        let l:end = line('.')
-    else
-        call add(l:error, s:error_end)
-    endif
+    let l:error_range = getText_auto#Range(l:pat_start, l:pat_end)
+    let l:error = l:error_range[0]
+    let l:range = l:error_range[1]
 
-    $normal! 0
-    if search(l:pat_start, 'bcW') && (line('.') != l:start)
-        call add(l:error, s:error_dupKey)
-    endif
-
-    if len(l:error)
-        call add(l:error, s:note_fileList)
-        call extend(s:errMsg, l:error)
-        call s:OpenFile('close')
+    if !empty(l:error)
+        if index(l:error, 'start') > -1
+            call add(s:errMsg, s:error_start)
+            call add(s:errMsg, s:note_start)
+        elseif index(l:error, 'end') > -1
+            call add(s:errMsg, s:error_end)
+        elseif index(l:error, 'duplicate') > -1
+            call add(s:errMsg, s:error_dupKey)
+        endif
+        call add(s:errMsg, s:note_fileList)
+        call getText_auto#OpenFile('close', '')
         return
+    else
+        let s:Range = l:range
+        call s:DebugMsg(s:echoMsg[2][1][0], s:pathToScript)
+        call s:DebugMsg(s:Range, s:pathToScript)
     endif
-
-    let s:Range = [l:start, l:end]
-    call s:DebugMsg(s:echoMsg[2][1][0], s:pathToScript)
-    call s:DebugMsg(s:Range, s:pathToScript)
-endfun
-
-fun! s:RawText()
-    let l:range = s:Range
-    let l:start = l:range[0] +1
-    let l:end = l:range[1] -1
-
-    let s:RawText = getline(l:start, l:end)
 endfun
 
 fun! s:FileList()
-    let l:rawText = s:RawText
-
-    let l:noSpace = []
-    let l:pat_space = '\v^\s*(.{-})\s*$'
-    for l:tmpItem in l:rawText
-        let l:shrink = substitute(l:tmpItem, l:pat_space, '\1', '')
-        call add(l:noSpace, l:shrink)
-    endfor
-
-    let l:noEmptyLine = filter(l:noSpace, 'v:val =~ "."')
-
-    let l:pat_comment = 'v:val !~? "' . s:pat_comment . '"'
-    let l:noCommentLine = filter(l:noEmptyLine, l:pat_comment)
+    let l:rawText = getText_auto#RawText(s:Range, 1, -1)
+    let l:noCommentLine = getText_auto#noSpace(l:rawText, s:pat_comment)
 
     let l:pat_com_path = '\v^' . s:pat_com_path
     let l:idx_split =
@@ -216,7 +167,7 @@ fun! s:CommandList()
 
         let l:path = substitute(l:com_path, l:pat_split, '\2', '')
         let l:path_combine = s:EditPath(l:path)
-        if len(s:errMsg)
+        if !empty(s:errMsg)
             call add(s:errMsg, s:note_fileList)
             call add(s:errMsg, s:note_gPlace_F)
             return
@@ -234,10 +185,10 @@ endfun
 
 fun! s:MoveToTab()
     if s:newTab ==# '/i'
-        exe 'silent 0tabe ' . s:pathToFileList
+        exe 'silent 0tabe ' . expand('%')
         let s:tabStart = 1
     elseif s:newTab ==# '/a'
-        exe 'silent $tabe ' . s:pathToFileList
+        exe 'silent $tabe ' . expand('%')
         let s:tabStart = tabpagenr()
     elseif s:newTab ==# '/c'
         if (tabpagenr('$') > 1)
@@ -267,7 +218,7 @@ fun! s:ExeCommand()
                 endif
             elseif filereadable(l:pathTofile)
                 exe 'silent ' . l:exe[0] . ' ' . l:pathTofile
-                call s:ChangeDir()
+                call getText_auto#ChangeDir()
             else
                 if l:fileList
                     call s:DebugMsg(s:echoMsg[2][2], s:pathToScript)
@@ -301,70 +252,15 @@ fun! s:DebugMsg(debugMsg, pathToScript, ...)
     endif
 endfun
 
-fun! s:CutTrailSlash(path)
-    let l:path = expand(a:path)
-    let l:pat_trailSlash = '\v^(.{-})(\\|\/)*$'
-    let l:path = substitute(l:path, l:pat_trailSlash, '\1', '')
-    return l:path
-endfun
-
 fun! s:EditPath(path)
-    let l:pat_idx = '^%\v(\d*)$'
-    let l:pat_subIdx = '^%\v(\d+)\.(\d+)$'
-
-    if a:path =~? l:pat_subIdx
-        let l:tmpIdx = substitute(a:path, l:pat_subIdx, '\1', '')
-        let l:tmpSubIdx = substitute(a:path, l:pat_subIdx, '\2', '')
-        if !exists('s:path_place[l:tmpIdx]')
-            \ || !exists('s:path_place[l:tmpIdx][l:tmpSubIdx]')
-            let s:errMsg = add(s:errMsg, s:error_path)
-            return
-        else
-            let l:path = s:path_place[l:tmpIdx][l:tmpSubIdx]
-        endif
-    elseif a:path =~? l:pat_idx
-        let l:tmpIdx = substitute(a:path, l:pat_idx, '\1', '')
-        if !exists('s:path_place[l:tmpIdx]')
-            let s:errMsg = add(s:errMsg, s:error_path)
-            return
-        else
-            let l:path = s:path_place[l:tmpIdx]
-        endif
-    else
-        let l:path = a:path
-    endif
-
-    if l:path =~ s:pat_empty
+    let l:path =
+    \ public_quickEdit_auto#convertStr('path', a:path, s:path_place)
+    let l:list = filter(l:path[0], 'v:val == 1')
+    if !empty(l:list)
         let s:errMsg = add(s:errMsg, s:error_path)
         return
     endif
-
-    return s:CutTrailSlash(l:path)
-endfun
-
-fun! s:ChangeDir()
-    if expand(getcwd()) ==? expand('%:h')
-        exe 'cd ' . getcwd()
-    endif
-endfun
-
-fun! s:FilterArg(argList, pat, def)
-    let l:tmpList = copy(a:argList)
-    let l:tmpList = filter(l:tmpList, a:pat)
-    if len(l:tmpList) > 0
-       let l:result = l:tmpList[0]
-    else
-       let l:result = a:def
-    endif
-    return l:result
-endfun
-
-fun! s:CheckArgCase(arg, case)
-    if a:arg =~# '\' . a:case
-        return 1
-    else
-        return 0
-    endif
+    return l:path[1]
 endfun
 
 fun! s:EchoMessage(pos, ...)
@@ -390,24 +286,28 @@ fun! tab_quickEdit_auto#CallFuns(...)
     call s:InitVar()
 
     let l:argList = copy(a:000)
+    let l:filterFull = 'v:val !~ ''' . s:pat_full . ''''
+    let l:filterTab = 'v:val =~ ''' . s:pat_tab . ''''
+    let l:filterBack = 'v:val =~ ''' . s:pat_back . ''''
+
     let l:keyWord =
-    \ s:FilterArg(l:argList, 'v:val !~ s:pat_full', expand('<cword>'))
+    \ comArg_auto#FilterArg(l:argList, l:filterFull, expand('<cword>'))
 
     let l:tmpArg =
-    \ s:FilterArg(l:argList, 'v:val =~ s:pat_tab', s:defNewTab)
+    \ comArg_auto#FilterArg(l:argList, l:filterTab, s:defNewTab)
     let s:newTab = tolower(l:tmpArg)
-    let l:debug = s:CheckArgCase(l:tmpArg, 'u')
+    let l:debug = comArg_auto#CheckArgCase(l:tmpArg, 'u')
 
     let l:tmpArg =
-    \ s:FilterArg(l:argList, 'v:val =~ s:pat_back', s:defBack)
-    let s:moveBack = s:CheckArgCase(l:tmpArg, 'l')
+    \ comArg_auto#FilterArg(l:argList, l:filterBack, s:defBack)
+    let s:moveBack = comArg_auto#CheckArgCase(l:tmpArg, 'l')
 
     let l:funs = []
-    call add(l:funs, 's:OpenFile(''open'')')
-    call add(l:funs, 's:Range(l:keyWord)')
-    call add(l:funs, 's:RawText()')
-    call add(l:funs, 's:OpenFile(''close'')')
+    call add(l:funs, 'getText_auto#OpenFile("open",'''
+    \ . s:pathToFileList . ''')')
+    call add(l:funs, 's:Range(''' . l:keyWord . ''')')
     call add(l:funs, 's:FileList()')
+    call add(l:funs, 'getText_auto#OpenFile("close","")')
     call add(l:funs, 's:CommandList()')
     call add(l:funs, 's:MoveToTab()')
     call add(l:funs, 's:ExeCommand()')
@@ -417,7 +317,7 @@ fun! tab_quickEdit_auto#CallFuns(...)
     endif
 
     for l:tmpItem in l:funs
-        if !len(s:errMsg)
+        if empty(s:errMsg)
             exe 'call ' . l:tmpItem
             if l:debug
                 echom l:tmpItem
@@ -429,7 +329,7 @@ fun! tab_quickEdit_auto#CallFuns(...)
             let l:errCopy = copy(s:errMsg)
             let l:pat_filter = '\\v(' . s:error_path . ')'
             call filter(l:errCopy, 'v:val !~? "' . l:pat_filter . '"')
-            if len(l:errCopy)
+            if !empty(l:errCopy)
                 call confirm(l:errCopy[0])
             else
                 call confirm(s:errMsg[0])
