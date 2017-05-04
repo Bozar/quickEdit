@@ -69,7 +69,7 @@ fun! getText_auto#CutTrailSlash(path)
     return l:path
 endfun
 
-fun! getText_auto#Range(start, end)
+fun! getText_auto#Range(start, end, looseStart)
     let l:pat_start = a:start
     let l:pat_end = a:end
     let l:error = []
@@ -84,6 +84,11 @@ fun! getText_auto#Range(start, end)
     if search(l:pat_end, 'cW')
         let l:end = line('.')
     else
+        let l:end = 0
+        call add(l:error, 'end')
+    endif
+    if (a:looseStart != '') && search(a:looseStart, 'bcW')
+        \ && (line('.') != l:start)
         let l:end = 0
         call add(l:error, 'end')
     endif
