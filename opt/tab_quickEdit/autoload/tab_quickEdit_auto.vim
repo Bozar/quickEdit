@@ -3,6 +3,12 @@
 "auto s:commandList
 "   convert: path, win command
 "auto s:exeCommand
+"procedure:
+"   input value
+"   call public fun
+"   store value
+"   output error/debug message
+"   output result
 
 fun! s:InitVar()
     let s:pat_com_path = '#(EDIT|TABE):'
@@ -127,7 +133,7 @@ endfun
 fun! s:Range(keyword)
     let l:pat_start = '^\v\s*\V' . a:keyword . '\v\s+\{\s*$'
     let l:pat_end = '^\v\s*\}\s*$'
-    let l:pat_looseStart = '^\v\s*[^\/].{-}\s+\{\s*$'
+    let l:pat_looseStart = '^\v\s*[^\/]\S.{-}\s+\{\s*$'
 
     let l:error_range =
     \ getText_auto#Range(l:pat_start, l:pat_end, l:pat_looseStart)
@@ -138,112 +144,65 @@ fun! s:Range(keyword)
         if index(l:error, 'start') > -1
             call add(s:errMsg, s:error_start)
             call add(s:errMsg, s:note_start)
-        elseif index(l:error, 'end') > -1
+        endif
+        if index(l:error, 'end') > -1
             call add(s:errMsg, s:error_end)
-        elseif index(l:error, 'duplicate') > -1
+        endif
+        if index(l:error, 'duplicate') > -1
             call add(s:errMsg, s:error_dupKey)
         endif
         call add(s:errMsg, s:note_fileList)
         call getText_auto#OpenFile('close', '')
         return
     else
-        let s:range = l:range
+        let s:Range = l:range
         call s:DebugMsg(s:echoMsg[2][1][0], s:pathToScript)
-        call s:DebugMsg(s:range, s:pathToScript)
+        call s:DebugMsg(s:Range, s:pathToScript)
     endif
 endfun
 
 fun! s:FileList()
-    let s:FileList = public_quickEdit_auto#FileList(s:range
-    \ , [s:pat_comment, '\v^' . s:pat_com_path])
+    let l:range = s:Range
+    let l:comment = s:pat_comment
+    let l:command_path = '\v^' . s:pat_com_path
+
+    let l:fileList =
+    \ public_quickEdit_auto#FileList(l:range, l:comment, l:command_path)
 
     call s:DebugMsg(s:echoMsg[2][1][1], s:pathToScript)
-    call s:DebugMsg(s:FileList, s:pathToScript)
+    call s:DebugMsg(l:fileList, s:pathToScript)
+
+    let s:FileList = l:fileList
 endfun
 
 fun! s:CommandList()
-    let l:item_split = s:FileList
-    let l:commandList = []
+    let l:fileList = s:FileList
+    let l:pat_com_path = s:pat_com_path
+    let l:path_place = s:path_place
+    let l:winOnly = s:winOnly
 
-    for l:tmpItem in l:item_split
-        let l:com_path = remove(l:tmpItem,0)
-        let l:file = l:tmpItem
+    let l:error_command =
+    \ public_quickEdit_auto#CommandList(l:fileList, l:pat_com_path
+    \ , l:path_place, l:winOnly)
 
-        let l:pat_split = '\v' . s:pat_com_path . '\s*' . '(.*)$'
-        let l:command = substitute(l:com_path, l:pat_split, '\1', '')
-        let l:command = public_quickEdit_auto#convertStr('edFile'
-        \ , l:command, s:winOnly)
-
-        let l:path = substitute(l:com_path, l:pat_split, '\2', '')
-        let l:path =
-        \ public_quickEdit_auto#convertStr('path', l:path, s:path_place)
-        let l:errList = filter(l:path[0], 'v:val == 1')
-        if !empty(l:errList)
-            call add(s:errMsg, s:error_path)
-            call add(s:errMsg, s:note_fileList)
-            call add(s:errMsg, s:note_gPlace_F)
-            return
-        endif
-        let l:path = l:path[1]
-
-        let l:combine = []
-        let l:combine = insert(l:file, l:path)
-        let l:combine = insert(l:combine, l:command)
-        let l:commandList = add(l:commandList, l:combine)
-    endfor
+    let l:error = remove(l:error_command, 0)
+    let l:commandList = l:error_command
+    if !empty(l:error)
+        call add(s:errMsg, s:error_path)
+        call add(s:errMsg, s:note_fileList)
+        call add(s:errMsg, s:note_gPlace_F)
+        return
+    endif
+    call s:DebugMsg(s:echoMsg[2][1][2], s:pathToScript)
+    call s:DebugMsg(l:commandList, s:pathToScript)
 
     let s:CommandList = l:commandList
-    call s:DebugMsg(s:echoMsg[2][1][2], s:pathToScript)
-    call s:DebugMsg(s:CommandList, s:pathToScript)
 endfun
 
-"delete
-"fun! s:CommandList()
-"    let l:item_split = s:FileList
-"
-"    let l:command = []
-"    for l:tmpItem in l:item_split
-"        let l:com_path = remove(l:tmpItem,0)
-"        let l:file_combine = l:tmpItem
-"
-"        let l:pat_split = '\v' . s:pat_com_path . '\s*' . '(.*)$'
-"        let l:com_combine = substitute(l:com_path, l:pat_split, '\1', '')
-"        let l:com_combine = tolower(l:com_combine)
-"
-"        let l:path = substitute(l:com_path, l:pat_split, '\2', '')
-"        let l:path_combine = s:EditPath(l:path)
-"        if !empty(s:errMsg)
-"            call add(s:errMsg, s:note_fileList)
-"            call add(s:errMsg, s:note_gPlace_F)
-"            return
-"        endif
-"
-"        let l:combine = insert(l:file_combine, l:path_combine)
-"        let l:combine = insert(l:combine, l:com_combine)
-"        let l:command = add(l:command, l:combine)
-"    endfor
-"
-"    let s:CommandList = l:command
-"    call s:DebugMsg(s:echoMsg[2][1][2], s:pathToScript)
-"    call s:DebugMsg(s:CommandList, s:pathToScript)
-"endfun
-
 fun! s:MoveToTab()
-    if s:newTab ==# '/i'
-        exe 'silent 0tabe ' . expand('%')
-        let s:tabStart = 1
-    elseif s:newTab ==# '/a'
-        exe 'silent $tabe ' . expand('%')
-        let s:tabStart = tabpagenr()
-    elseif s:newTab ==# '/c'
-        if (tabpagenr('$') > 1)
-            tabo
-        endif
-        let s:tabStart = 1
-        if winnr('$') > 1
-            wincmd o
-        endif
-    endif
+    let l:newTab = s:newTab
+    let l:tabStart = public_quickEdit_auto#MoveToTab(l:newTab)
+    let s:tabStart = l:tabStart
 endfun
 
 fun! s:ExeCommand()

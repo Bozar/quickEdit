@@ -1,6 +1,6 @@
 syntax case ignore
 
-syntax match qeKeyword /\v[0-9a-zA-Z_]+\ze\s+\{\s*$/
+syntax match qeKeyword /\v^\s*[0-9a-zA-Z_]+\ze\s+\{\s*$/
 syntax match qeBracket /\v\s+\{\s*$/
 syntax match qeBracket /\v^\s*\}\s*$/
 syntax match qeCommand /\v^\s*#(EDIT|TABE):.*/ contains=qePath

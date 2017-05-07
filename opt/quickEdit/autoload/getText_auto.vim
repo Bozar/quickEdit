@@ -90,6 +90,7 @@ fun! getText_auto#Range(start, end, looseStart)
     if (a:looseStart != '') && search(a:looseStart, 'bcW')
         \ && (line('.') != l:start)
         let l:end = 0
+        call add(l:error, 'start')
         call add(l:error, 'end')
     endif
 
