@@ -1,5 +1,4 @@
 "TODO:
-"remove s:editPath
 "auto s:commandList
 "   convert: path, win command
 "auto s:exeCommand
@@ -16,22 +15,19 @@ fun! s:InitVar()
     let s:pat_tab = '^\v\/(i|a|c)$'
     let s:pat_back = '^\/b$'
     let s:pat_comment = '^/'
-    let s:pathToScript = ''
-    let s:pathToScript .= '~/vimfiles/pack/quickEdit/opt/'
-    let s:pathToScript .= 'tab_quickEdit/autoload/tab_quickEdit_auto.vim'
 
     let s:error_start = 'ERROR: Incorrect opening tag.'
     let s:error_end = 'ERROR: Incorrect closing tag.'
     let s:error_dupKey = 'ERROR: Dupliacated opening tags.'
     let s:error_path = 'ERROR: Incorrect path to files.'
-    let s:error_gFile_M0 = 'ERROR: Missing g:fileList[0].'
-    let s:error_gFile_W0 = 'ERROR: Incorrect g:fileList[0].'
+    let s:error_gFile_M0 = 'ERROR: Missing ''g:fileList.file''.'
+    let s:error_gFile_W0 = 'ERROR: Incorrect ''g:fileList.file''.'
     let s:error_gFile =
     \ 'ERROR: Incorrect fileList var, ''g:pathToFileList_quickEdit''.'
-    let s:error_gPlace_M = 'ERROR: Missing g:placeHolder[]'
+    let s:error_gPlace_M = 'ERROR: Missing g:placeHolder'
 
     let s:note_start = 'NOTE: Check command argument(s).'
-    let s:note_gFile_3 = 'NOTE: Check g:filelist[2].'
+    let s:note_gFile_3 = 'NOTE: Check g:filelist.arg.'
     let s:note_gFile_F =
     \ 'NOTE: Check fileList var, ''g:pathToFileList_quickEdit''.'
     let s:note_gPlace_F =
@@ -62,8 +58,8 @@ fun! s:InitVar()
     call add(s:echoMsg, l:echoDebug)
     call add(s:echoMsg, l:echoEOL)
 
-    let s:errMsg = []
-    let s:debugMsg = []
+    let s:message = {}
+    let s:message = collectMsg#DebugOrError(s:message, '')
 
     let l:val_defNewTab = '/c'
     let l:val_defBack = '/B'
@@ -75,57 +71,58 @@ fun! s:InitVar()
     endif
 
     if !exists('g:pathToFileList_quickEdit')
-        \ || !exists('g:pathToFileList_quickEdit[0][0]')
-        \ || !exists('g:pathToFileList_quickEdit[0][1]')
+        \ || (type(g:pathToFileList_quickEdit) !=? v:t_dict)
+        \ || !exists('g:pathToFileList_quickEdit.file[0]')
+        \ || !exists('g:pathToFileList_quickEdit.file[1]')
 
-        let g:pathToFileList_quickEdit = []
-        call add(s:errMsg, s:error_gFile_M0)
-        call add(s:errMsg, s:note_gFile_F)
-        call s:DebugMsg('', s:pathToScript)
+        let g:pathToFileList_quickEdit =
+        \ {'file': [], 'var': [], 'arg': []}
+        call collectMsg#DebugOrError(s:message, '', s:error_gFile_M0)
+        call collectMsg#DebugOrError(s:message, '', s:note_gFile_F)
 
         let s:defNewTab = l:val_defNewTab
         let s:defBack = l:val_defBack
         let s:pathToFileList = ''
         return
     endif
-    let s:path_file = copy(g:pathToFileList_quickEdit)
+    let s:path_file = deepcopy(g:pathToFileList_quickEdit)
 
-    if exists('s:path_file[1][0]') && exists('s:path_file[1][1]')
-        let l:pathToVar = getText_auto#CutTrailSlash(s:path_file[1][0])
-        \ . '/' . s:path_file[1][1]
+    if exists('s:path_file.var[0]') && exists('s:path_file.var[1]')
+        let l:pathToVar = getText_auto#CutTrailSlash(s:path_file.var[0])
+        \ . '/' . s:path_file.var[1]
         if filereadable(l:pathToVar)
             exe 'source ' . l:pathToVar
         endif
     endif
 
-    if exists('s:path_file[2][0]') && (s:path_file[2][0] =~? s:pat_tab)
-        let s:defNewTab = s:path_file[2][0]
+    if exists('s:path_file.arg[0]') && (s:path_file.arg[0] =~? s:pat_tab)
+        let s:defNewTab = s:path_file.arg[0]
     else
         let s:defNewTab = l:val_defNewTab
     endif
 
-    if exists('s:path_file[2][1]') && (s:path_file[2][1] =~? s:pat_back)
-        let s:defBack = s:path_file[2][1]
+    if exists('s:path_file.arg[1]') && (s:path_file.arg[1] =~? s:pat_back)
+        let s:defBack = s:path_file.arg[1]
     else
         let s:defBack = l:val_defBack
     endif
 
     if !exists('g:pathToPlaceholder_quickEdit')
-        let g:pathToPlaceholder_quickEdit = []
+        let g:pathToPlaceholder_quickEdit = {}
     endif
-    let s:path_place = g:pathToPlaceholder_quickEdit
+    let s:path_place = deepcopy(g:pathToPlaceholder_quickEdit)
 
     let l:path = public_quickEdit_auto#convertStr('path'
-    \ , s:path_file[0][0], s:path_place)
+    \ , s:path_file.file[0], s:path_place)
     let l:path = l:path[1]
-    let s:pathToFileList = l:path . '/' . s:path_file[0][1]
+    let s:pathToFileList = l:path . '/' . s:path_file.file[1]
     if !filereadable(s:pathToFileList)
-        call add(s:errMsg, s:error_gFile_W0)
-        call add(s:errMsg, s:note_gFile_3)
-        call add(s:errMsg, s:note_gFile_F)
-        call add(s:errMsg, s:note_gPlace_F)
-        call add(s:errMsg, s:note_fileList)
-        call s:DebugMsg('', s:pathToScript)
+        call collectMsg#DebugOrError(s:message, '', s:error_gFile_W0)
+        call collectMsg#DebugOrError(s:message, '', s:note_gFile_3)
+        call collectMsg#DebugOrError(s:message, '', s:note_gFile_F)
+        call collectMsg#DebugOrError(s:message, '', s:note_gPlace_F)
+        call collectMsg#DebugOrError(s:message, '', s:note_fileList)
+
         return
     endif
 endfun
@@ -142,22 +139,24 @@ fun! s:Range(keyword)
 
     if !empty(l:error)
         if index(l:error, 'start') > -1
-            call add(s:errMsg, s:error_start)
-            call add(s:errMsg, s:note_start)
+            call collectMsg#DebugOrError(s:message, '', s:error_start)
+            call collectMsg#DebugOrError(s:message, '', s:note_start)
+
         endif
         if index(l:error, 'end') > -1
-            call add(s:errMsg, s:error_end)
+            call collectMsg#DebugOrError(s:message, '', s:error_end)
         endif
         if index(l:error, 'duplicate') > -1
-            call add(s:errMsg, s:error_dupKey)
+            call collectMsg#DebugOrError(s:message, '', s:error_dupKey)
         endif
-        call add(s:errMsg, s:note_fileList)
+        call collectMsg#DebugOrError(s:message, '', s:note_fileList)
         call getText_auto#OpenFile('close', '')
         return
     else
         let s:Range = l:range
-        call s:DebugMsg(s:echoMsg[2][1][0], s:pathToScript)
-        call s:DebugMsg(s:Range, s:pathToScript)
+        call collectMsg#DebugOrError(s:message, s:echoMsg[2][1][0])
+        call collectMsg#DebugOrError(s:message, s:Range)
+
     endif
 endfun
 
@@ -169,8 +168,8 @@ fun! s:FileList()
     let l:fileList =
     \ public_quickEdit_auto#FileList(l:range, l:comment, l:command_path)
 
-    call s:DebugMsg(s:echoMsg[2][1][1], s:pathToScript)
-    call s:DebugMsg(l:fileList, s:pathToScript)
+    call collectMsg#DebugOrError(s:message, s:echoMsg[2][1][1])
+    call collectMsg#DebugOrError(s:message, l:fileList)
 
     let s:FileList = l:fileList
 endfun
@@ -188,13 +187,14 @@ fun! s:CommandList()
     let l:error = remove(l:error_command, 0)
     let l:commandList = l:error_command
     if !empty(l:error)
-        call add(s:errMsg, s:error_path)
-        call add(s:errMsg, s:note_fileList)
-        call add(s:errMsg, s:note_gPlace_F)
+        call collectMsg#DebugOrError(s:message, '', s:error_path)
+        call collectMsg#DebugOrError(s:message, '', s:note_fileList)
+        call collectMsg#DebugOrError(s:message, '', s:note_gPlace_F)
+
         return
     endif
-    call s:DebugMsg(s:echoMsg[2][1][2], s:pathToScript)
-    call s:DebugMsg(l:commandList, s:pathToScript)
+    call collectMsg#DebugOrError(s:message, s:echoMsg[2][1][2])
+    call collectMsg#DebugOrError(s:message, l:commandList)
 
     let s:CommandList = l:commandList
 endfun
@@ -225,10 +225,10 @@ fun! s:ExeCommand()
                 call getText_auto#ChangeDir()
             else
                 if l:fileList
-                    call s:DebugMsg(s:echoMsg[2][2], s:pathToScript)
+                    call collectMsg#DebugOrError(s:message, s:echoMsg[2][2])
                     let l:fileList = 0
                 endif
-                call s:DebugMsg(l:pathTofile, s:pathToScript)
+                call collectMsg#DebugOrError(s:message, l:pathTofile)
             endif
         endfor
     endfor
@@ -238,36 +238,21 @@ fun! s:ExeCommand()
     endif
 endfun
 
-fun! s:DebugMsg(debugMsg, pathToScript, ...)
-    if string(a:debugMsg) !~ '^\s*$'
-        let s:debugMsg = add(s:debugMsg, string(a:debugMsg))
-    endif
-    if exists('a:1')
-        let s:errMsg = add(s:errMsg, string(a:1))
-    endif
-
-    let l:history = 'e ' . a:pathToScript
-
-    let l:testOnly = 0
-    if l:testOnly
-        if histget(':',-1) !=? l:history
-            call histadd(':', l:history)
-        endif
-    endif
-endfun
-
 fun! s:EchoMessage(pos, ...)
+    let l:debugMsg = copy(s:message.debug)
+    let l:errorMsg = copy(s:message.error)
+
     if a:pos ==? 'head'
         echom s:echoMsg[0][0]
         echom s:echoMsg[0][1]
     elseif a:pos ==? 'tail'
         echom s:echoMsg[2][0]
-        for l:tmpItem in s:debugMsg
+        for l:tmpItem in l:debugMsg
             echom l:tmpItem
         endfor
         if exists('a:1') && a:1
             echom s:echoMsg[1][0]
-            for l:tmpItem in s:errMsg
+            for l:tmpItem in l:errorMsg
                 echom l:tmpItem
             endfor
         endif
@@ -310,7 +295,7 @@ fun! tab_quickEdit_auto#CallFuns(...)
     endif
 
     for l:tmpItem in l:funs
-        if empty(s:errMsg)
+        if empty(s:message.error)
             exe 'call ' . l:tmpItem
             if l:debug
                 echom l:tmpItem
@@ -319,13 +304,13 @@ fun! tab_quickEdit_auto#CallFuns(...)
             if l:debug
                 call s:EchoMessage('tail', 1)
             endif
-            let l:errCopy = copy(s:errMsg)
-            let l:pat_filter = '\\v(' . s:error_path . ')'
-            call filter(l:errCopy, 'v:val !~? "' . l:pat_filter . '"')
+            let l:errCopy = copy(s:message.error)
+            let l:pat_filter = '\v(' . s:error_path . ')'
+            call filter(l:errCopy, 'v:val !~? ''' . l:pat_filter . '''')
             if !empty(l:errCopy)
                 call confirm(l:errCopy[0])
             else
-                call confirm(s:errMsg[0])
+                call confirm(s:message.error[0])
             endif
             return
         endif

@@ -79,39 +79,19 @@ fun! public_quickEdit_auto#MoveToTab(newTab)
 endfun
 
 fun! s:strToPath(path, refer)
-    let l:pat_idx = '^%\v(\d*)$'
-    let l:pat_subIdx = '^%\v(\d+)\.(\d+)$'
+    let l:pat_dict = '^%\v\s*(\S.{-})\.(\d+)$'
     let l:pat_empty = '^\v\s*$'
     let l:retPath = ''
     let l:error = []
+    let l:refer = deepcopy(a:refer)
 
-    if a:path =~? l:pat_subIdx
-        let l:idx = substitute(a:path, l:pat_subIdx, '\1', '')
-        let l:subIdx = substitute(a:path, l:pat_subIdx, '\2', '')
-        let l:item = get(a:refer, l:idx, '')
-        if type(l:item) ==# v:t_list
-            let l:item = get(l:item, l:subIdx)
-        else
-            let l:item = ''
+    if a:path =~? l:pat_dict
+        let l:key = substitute(a:path, l:pat_dict, '\1', '')
+        let l:idx = substitute(a:path, l:pat_dict, '\2', '')
+        if (type(l:refer) ==? v:t_dict)
+            \ && exists('l:refer[l:key][l:idx]')
+            let l:retPath = l:refer[l:key][l:idx]
         endif
-        if l:item == ''
-            call add(l:error, 1)
-        else
-            let l:retPath = a:refer[l:idx][l:subIdx]
-        endif
-
-    elseif a:path =~? l:pat_idx
-        let l:idx = substitute(a:path, l:pat_idx, '\1', '')
-        let l:item = get(a:refer, l:idx, '')
-        if (type(l:item) ==# v:t_list) || (l:item == '')
-            let l:item = ''
-        endif
-        if l:item == ''
-            call add(l:error, 1)
-        else
-            let l:retPath = a:refer[l:idx]
-        endif
-
     else
         let l:retPath = a:path
     endif
