@@ -1,5 +1,5 @@
 fun! comArg_auto#FilterArg(argList, pat, def)
-    let l:tmpList = copy(a:argList)
+    let l:tmpList = deepcopy(a:argList)
     let l:tmpList = filter(l:tmpList, a:pat)
     if !empty(l:tmpList)
        let l:result = l:tmpList[0]

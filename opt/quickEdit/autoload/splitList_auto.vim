@@ -3,9 +3,9 @@ fun! splitList_auto#SetPoint(list, pat, case)
     let l:tmpNum = 0
 
     for l:tmpItem in a:list
-        if a:case == 0 && l:tmpItem =~? a:pat
+        if (a:case == 0) && (l:tmpItem =~? a:pat)
             call add(l:idx_split, l:tmpNum)
-        elseif a:case == 1 && l:tmpItem =~# a:pat
+        elseif (a:case == 1) && (l:tmpItem =~# a:pat)
             call add(l:idx_split, l:tmpNum)
         endif
         let l:tmpNum += 1
@@ -15,18 +15,18 @@ fun! splitList_auto#SetPoint(list, pat, case)
 endfun
 
 fun! splitList_auto#Cut(list, split)
-    let l:copyList = copy(a:list)
-    let l:copySplit = copy(a:split)
+    let l:list = deepcopy(a:list)
+    let l:split = deepcopy(a:split)
     let l:newList = []
 
-    while len(l:copySplit)
-        let l:start = remove(l:copySplit, 0)
-        if len(l:copySplit)
-            let l:end = l:copySplit[0] -1
+    while !empty(l:split)
+        let l:start = remove(l:split, 0)
+        if !empty(l:split)
+            let l:end = l:split[0] -1
         else
-            let l:end = len(l:copyList) -1
+            let l:end = len(l:list) -1
         endif
-        call add(l:newList, l:copyList[l:start : l:end])
+        call add(l:newList, l:list[l:start : l:end])
     endwhile
 
     return l:newList

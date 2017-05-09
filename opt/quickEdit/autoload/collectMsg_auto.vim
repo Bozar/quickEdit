@@ -1,9 +1,7 @@
-fun! collectMsg#DebugOrError(store, add, ...)
-    let l:store = a:store
-    let l:addDebug = a:add
-    if exists('a:1')
-        let l:addError = a:1
-    endif
+fun! collectMsg_auto#DebugOrError(store, debug, error)
+    let l:store = deepcopy(a:store)
+    let l:addDebug = deepcopy(a:debug)
+    let l:addError = deepcopy(a:error)
 
     if !has_key(l:store, 'debug')
         let l:store.debug = []
@@ -20,15 +18,14 @@ fun! collectMsg#DebugOrError(store, add, ...)
         call add(l:store.debug, l:addDebug)
     endif
 
-    if exists('l:addError')
-        if (type(l:addError) !=? v:t_number)
+    if (type(l:addError) !=? v:t_number)
         \ && (type(l:addError) !=? v:t_string)
-            let l:addError = string(l:addError)
-        endif
-        if l:addError != ''
-            call add(l:store.error, l:addError)
-        endif
+        let l:addError = string(l:addError)
+    endif
+    if l:addError != ''
+        call add(l:store.error, l:addError)
     endif
 
     return l:store
 endfun
+
