@@ -1,4 +1,4 @@
-if v:version < 800
+if (v:version < 800)
     finish
 endif
 
@@ -7,7 +7,7 @@ if !exists('g:commandName_tab_quickEdit')
     let g:commandName_tab_quickEdit = 'QuickEditTabPage'
 endif
 if !exists(':' . g:commandName_tab_quickEdit)
-    exe 'com! -nargs=* ' .
-    \ g:commandName_tab_quickEdit .
-    \ ' call quickEdit_auto#CallFuns(<f-args>)'
+    exe 'com! -nargs=* ' . g:commandName_tab_quickEdit
+    \ . ' call quickEdit_auto#CallFuns(<f-args>)'
 endif
+
