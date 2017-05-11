@@ -33,30 +33,35 @@ fun! getText_auto#Range(start, end, looseStart)
     let l:pat_start = a:start
     let l:pat_end = a:end
     let l:looseStart = a:looseStart
+    let l:start = 0
+    let l:end = 0
     let l:error = []
 
     1normal! 0
-    if search(l:pat_start, 'cW')
+    if empty(l:error) && search(l:pat_start, 'cW')
         let l:start = line('.')
     else
-        let l:start = 0
         call add(l:error, 'start')
     endif
-    if search(l:pat_end, 'cW')
+    if empty(l:error) && search(l:pat_end, 'cW')
         let l:end = line('.')
     else
-        let l:end = 0
         call add(l:error, 'end')
     endif
-    if (l:start != 0) && (l:looseStart != '')
-        \ && search(l:looseStart, 'bcW') && (line('.') != l:start)
-        let l:end = 0
-        call add(l:error, 'loose')
+
+    $normal! $
+    if empty(l:error) && search(l:pat_start, 'bcW')
+        \ && (line('.') != l:start)
+        let l:start = line('.')
+        call add(l:error, 'duplicate')
     endif
 
-    $normal! 0
-    if search(l:pat_start, 'bcW') && (line('.') != l:start)
-        call add(l:error, 'duplicate')
+    exe l:end . 'normal! $'
+    if empty(l:error) && (l:looseStart != '')
+        \ && search(l:looseStart, 'bcW', l:start)
+        \ && (line('.') != l:start)
+        let l:start = line('.')
+        call add(l:error, 'loose')
     endif
 
     let l:result = [l:error, [l:start, l:end]]
@@ -79,7 +84,7 @@ fun! getText_auto#RawText(rangeList, ...)
     return l:rawText
 endfun
 
-fun! getText_auto#noSpace(text, comment)
+fun! getText_auto#NoSpace(text, comment)
     let l:text = deepcopy(a:text)
     let l:comment = a:comment
     let l:noSpace = []
@@ -109,5 +114,13 @@ fun! getText_auto#CutTrailSlash(path)
     let l:pat_trailSlash = '\v^(.{-})(\\|\/)*$'
     let l:path = substitute(l:path, l:pat_trailSlash, '\1', '')
     return l:path
+endfun
+
+fun! getText_auto#ConvertToStr(input)
+    let l:input = deepcopy(a:input)
+    if (type(l:input) !=? v:t_number) && (type(l:input) !=? v:t_string)
+        let l:input = string(l:input)
+    endif
+    return l:input
 endfun
 

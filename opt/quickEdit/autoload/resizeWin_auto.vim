@@ -1,4 +1,6 @@
-fun! resizeWin_auto#main(direction, percent)
+"REQUIRE: manageTabs_auto.vim
+
+fun! resizeWin_auto#Main(direction, percent)
     let l:result = s:InitVar(a:direction, a:percent)
     let l:error = l:result[0]
     if !empty(l:error)
@@ -44,19 +46,17 @@ endfun
 fun! s:GetWinSize()
     let l:height = 0
     let l:width = 0
+    let l:newTab = 0
 
     if winnr('$') > 1
-        let l:file = expand('%:p')
-        if (l:file == '')
-            let l:file = $MYVIMRC
-        endif
-        tabe l:file
+        call manageTabs_auto#OpenNewTab()
+        let l:newTab = 1
     endif
 
     let l:height = winheight('%')
     let l:width = winwidth('%')
 
-    if exists('l:file')
+    if l:newTab
         tabprevious
         +tabclose
     endif

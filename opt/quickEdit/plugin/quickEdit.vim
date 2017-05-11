@@ -8,6 +8,6 @@ if !exists('g:commandName_tab_quickEdit')
 endif
 if !exists(':' . g:commandName_tab_quickEdit)
     exe 'com! -nargs=* ' . g:commandName_tab_quickEdit
-    \ . ' call quickEdit_auto#CallFuns(<f-args>)'
+    \ . ' call quickEdit_auto#Main(<f-args>)'
 endif
 
