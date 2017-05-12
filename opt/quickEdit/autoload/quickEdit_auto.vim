@@ -110,7 +110,9 @@ fun! s:InitVar()
     endif
     let s:path_place = deepcopy(g:pathToPlaceholder_quickEdit)
 
-    let l:err_path = s:GetDictValue(s:path_file['file'][0], s:path_place)
+    let l:err_path = ioMessage_auto#SearchDict(
+    \ s:path_file['file'][0]
+    \ , s:path_place, s:pattern['dict'], '\1', '\2')
     let l:path = l:err_path[1]
     let l:path = getText_auto#CutTrailSlash(l:path)
 
@@ -145,18 +147,16 @@ fun! s:Range(keyword)
             \ , '', s:echoMsg['range'][0])
             let s:collectMsg = ioMessage_auto#DebugOrError(s:collectMsg
             \ , '', s:echoMsg['note'][0])
-        endif
-        if index(l:error, 'end') > -1
+
+        elseif index(l:error, 'end') > -1
             let s:collectMsg = ioMessage_auto#DebugOrError(s:collectMsg
             \ , '', s:echoMsg['range'][1])
-        endif
 
-        if index(l:error, 'duplicate') > -1
+        elseif index(l:error, 'duplicate') > -1
             let s:collectMsg = ioMessage_auto#DebugOrError(s:collectMsg
             \ , '', s:echoMsg['range'][2] . 'Line ' . l:errLine . '.')
-        endif
 
-        if index(l:error, 'loose') > -1
+        elseif index(l:error, 'loose') > -1
             let s:collectMsg = ioMessage_auto#DebugOrError(s:collectMsg
             \ , '', s:echoMsg['range'][3] . 'Line ' . l:errLine . '.')
         endif
@@ -185,8 +185,8 @@ fun! s:FileList()
     let l:noComment = getText_auto#NoSpace(l:rawText, l:comment)
 
     let l:idx_split
-    \ = splitList_auto#SetPoint(l:noComment, l:command_path, 0)
-    let l:item_split = splitList_auto#Cut(l:noComment, l:idx_split)
+    \ = ioMessage_auto#GetSplitIdx(l:noComment, l:command_path, 0)
+    let l:item_split = ioMessage_auto#SplitList(l:noComment, l:idx_split)
     let l:item_split = filter(l:item_split, 'len(v:val) > 1')
 
     let s:collectMsg = ioMessage_auto#DebugOrError(s:collectMsg
@@ -217,7 +217,9 @@ fun! s:CommandList()
         endif
 
         let l:path = substitute(l:com_path, l:split, '\2', '')
-        let l:err_path = s:GetDictValue(l:path, s:path_place)
+        let l:err_path = ioMessage_auto#SearchDict(
+        \ l:path
+        \ , s:path_place, s:pattern['dict'], '\1', '\2')
         let l:error = l:err_path[0]
         if !empty(l:error)
             break
@@ -225,7 +227,7 @@ fun! s:CommandList()
         let l:path = l:err_path[1]
         let l:path = getText_auto#CutTrailSlash(l:path)
 
-        let l:err_file = s:ProcessFileName(l:file)
+        let l:err_file = s:ConvertFileName(l:file)
         let l:error = l:err_file[0]
         if !empty(l:error)
             break
@@ -266,10 +268,10 @@ fun! s:MoveToTab()
     endif
 
     if s:newTab ==# '/i'
-        call manageTabs_auto#OpenNewTab(0)
+        call manageLayout_auto#OpenNewTab(0)
         let l:tabStart = 1
     elseif s:newTab ==# '/a'
-        call manageTabs_auto#OpenNewTab('$')
+        call manageLayout_auto#OpenNewTab('$')
         let l:tabStart = tabpagenr()
     elseif s:newTab ==# '/c'
         if (tabpagenr('$') > 1)
@@ -325,52 +327,26 @@ fun! s:ExeCommand()
     endif
 endfun
 
-fun! s:GetDictValue(string, dict)
-    let l:str = a:string
-    let l:dict = deepcopy(a:dict)
-
-    let l:str = s:StrToKeyIdx(l:str)
-    if l:str[0] == 0
-        let l:result = ['' , l:str[1]]
-    elseif l:str[0] == 1
-        let l:result
-        \ = ioMessage_auto#DictValue(l:str[1], l:str[2], l:dict)
-    endif
-
-    return l:result
-endfun
-
-fun! s:StrToKeyIdx(string)
-    let l:str = a:string
-    let l:result = []
-
-    if l:str =~? s:pattern['dict']
-        let l:key = substitute(l:str, s:pattern['dict'], '\1', '')
-        let l:idx = substitute(l:str, s:pattern['dict'], '\2', '')
-        let l:result = [1, l:key, l:idx]
-    else
-        let l:result = [0, l:str]
-    endif
-
-    return l:result
-endfun
-
-fun! s:ProcessFileName(fileNameList)
+fun! s:ConvertFileName(fileNameList)
     let l:file = deepcopy(a:fileNameList)
     let l:err_file = []
     let l:error = []
     let l:newFile = []
 
     for l:item in l:file
-        let l:err_file = s:GetDictValue(l:item, s:path_place)
+        let l:err_file = ioMessage_auto#SearchDict(
+        \ l:item
+        \ , s:path_place, s:pattern['dict'], '\1', '\2')
         let l:error = l:err_file[0]
         if !empty(l:error)
             break
         endif
-        let l:newFile = add(l:newFile, l:err_file[1])
+        let l:tmp = l:err_file[1]
+
+        let l:newFile = add(l:newFile, l:tmp)
     endfor
 
-    return [l:error, l:file]
+    return [l:error, l:newFile]
 endfun
 
 fun! s:EchoDebugOrError(...)
