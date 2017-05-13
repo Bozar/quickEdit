@@ -190,3 +190,4 @@ fun! ioMessage_auto#SearchDictPat(string, dict)
 
     return l:result
 endfun
+

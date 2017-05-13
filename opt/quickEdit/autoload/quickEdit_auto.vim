@@ -1,7 +1,3 @@
-"TODO:
-"use placeholder for: win command
-"convert str to win command
-
 fun! s:LoadStaticVar()
     let s:defArg = {}
     let s:defArg['tab'] = '/c'
@@ -278,10 +274,10 @@ fun! s:Move2Tab()
     endif
 
     if s:newTab ==# '/i'
-        call manageLayout_auto#OpenNewTab(0)
+        0tab split
         let l:tabStart = 1
     elseif s:newTab ==# '/a'
-        call manageLayout_auto#OpenNewTab('$')
+        $tab split
         let l:tabStart = tabpagenr()
     elseif s:newTab ==# '/c'
         if (tabpagenr('$') > 1)
@@ -359,13 +355,14 @@ fun! s:ConvertFileName(fileNameList)
     return [l:error, l:newFile]
 endfun
 
-fun! s:EchoDebugOrError(...)
-    let l:debugMsg = deepcopy(s:collectMsg.debug)
-    let l:errorMsg = deepcopy(s:collectMsg.error)
+fun! s:EchoDebugOrError(full)
+    let l:debugMsg = deepcopy(s:collectMsg['debug'])
+    let l:errorMsg = deepcopy(s:collectMsg['error'])
     let l:value = deepcopy(s:echoMsg['subTitle'])
     let l:idx = index(l:debugMsg, s:echoMsg['title'][4])
+    let l:full = a:full
 
-    if exists('a:1') && a:1
+    if !empty(l:errorMsg) && l:full
         call ioMessage_auto#EchoHi(s:echoMsg['title'][1], 'Error')
         for l:item in l:errorMsg
             echom l:item
@@ -373,7 +370,7 @@ fun! s:EchoDebugOrError(...)
     endif
 
     if l:idx > -1
-        let l:notFound = remove(l:debugMsg, l:idx, len(l:debugMsg)-1)
+        let l:notFound = remove(l:debugMsg, l:idx, len(l:debugMsg) -1)
         call remove(l:notFound, 0)
         call ioMessage_auto#EchoHi(s:echoMsg['title'][4], 'Error')
         for l:item in l:notFound
@@ -381,16 +378,18 @@ fun! s:EchoDebugOrError(...)
         endfor
     endif
 
-    call ioMessage_auto#EchoHi(s:echoMsg['title'][2], 'Type')
-    for l:item in l:debugMsg
-        if index(l:value, l:item) > -1
-            call ioMessage_auto#EchoHi(l:item, 'Identifier')
-        else
-            echom l:item
-        endif
-    endfor
+    if l:full
+        call ioMessage_auto#EchoHi(s:echoMsg['title'][2], 'Type')
+        for l:item in l:debugMsg
+            if index(l:value, l:item) > -1
+                call ioMessage_auto#EchoHi(l:item, 'Identifier')
+            else
+                echom l:item
+            endif
+        endfor
 
-    call ioMessage_auto#EchoHi(s:echoMsg['title'][3], 'Type')
+        call ioMessage_auto#EchoHi(s:echoMsg['title'][3], 'Type')
+    endif
 endfun
 
 fun! quickEdit_auto#Main(...)
@@ -430,7 +429,7 @@ fun! quickEdit_auto#Main(...)
     endif
 
     for l:item in l:funs
-        if empty(s:collectMsg.error)
+        if empty(s:collectMsg['error'])
             exe 'call ' . l:item
             if l:debug
                 echom l:item
@@ -439,17 +438,20 @@ fun! quickEdit_auto#Main(...)
         else
             if l:debug
                 call s:EchoDebugOrError(1)
-            endif
-            if l:debug < 1
+            else
                 redraw
+                call ioMessage_auto#EchoHi(s:collectMsg['error'][0]
+                \ , 'Error')
             endif
-            call ioMessage_auto#EchoHi(s:collectMsg.error[0], 'Error')
             return
         endif
     endfor
 
     if l:debug
-        call s:EchoDebugOrError()
+        call s:EchoDebugOrError(1)
+    else
+        redraw
+        call s:EchoDebugOrError(0)
     endif
 endfun
 
