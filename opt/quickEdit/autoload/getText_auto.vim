@@ -1,5 +1,5 @@
-fun! getText_auto#OpenFile(stat, pathToFile)
-    let l:path = expand(a:pathToFile)
+fun! getText_auto#OpenFile(stat, path2File)
+    let l:path = expand(a:path2File)
     if a:stat ==? 'open'
         wincmd s
         if bufexists(l:path)
@@ -82,45 +82,5 @@ fun! getText_auto#RawText(rangeList, ...)
 
     let l:rawText = getline(l:start, l:end)
     return l:rawText
-endfun
-
-fun! getText_auto#NoSpace(text, comment)
-    let l:text = deepcopy(a:text)
-    let l:comment = a:comment
-    let l:noSpace = []
-    let l:pat_space = '\v^\s*(.{-})\s*$'
-    let l:pat_empty = '\v^\s*$'
-
-    for l:tmpItem in l:text
-        let l:shrink = substitute(l:tmpItem, l:pat_space, '\1', '')
-        call add(l:noSpace, l:shrink)
-    endfor
-
-    let l:noEmptyLine = filter(l:noSpace
-    \, 'v:val !~ ''' . l:pat_empty . '''')
-
-    if a:comment !=? ''
-        let l:pat_comment = 'v:val !~? ''' . a:comment . ''''
-        let l:noCommentLine = filter(l:noEmptyLine, l:pat_comment)
-    else
-        let l:noCommentLine = l:noEmptyLine
-    endif
-
-    return l:noCommentLine
-endfun
-
-fun! getText_auto#CutTrailSlash(path)
-    let l:path = expand(a:path)
-    let l:pat_trailSlash = '\v^(.{-})(\\|\/)*$'
-    let l:path = substitute(l:path, l:pat_trailSlash, '\1', '')
-    return l:path
-endfun
-
-fun! getText_auto#ConvertToStr(input)
-    let l:input = deepcopy(a:input)
-    if (type(l:input) !=? v:t_number) && (type(l:input) !=? v:t_string)
-        let l:input = string(l:input)
-    endif
-    return l:input
 endfun
 

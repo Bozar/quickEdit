@@ -29,8 +29,10 @@ fun! s:LoadStaticVar()
     let s:echoMsg['range'] = []
     call add(s:echoMsg['range'], 'ERROR: Incorrect opening tag.')
     call add(s:echoMsg['range'], 'ERROR: Incorrect closing tag.')
-    call add(s:echoMsg['range'], 'ERROR: Containing duplicated opening tag in ')
-    call add(s:echoMsg['range'], 'ERROR: Containing another opening tag in ')
+    call add(s:echoMsg['range']
+    \ , 'ERROR: Containing duplicated opening tag in ')
+    call add(s:echoMsg['range']
+    \ , 'ERROR: Containing another opening tag in ')
 
     let s:echoMsg['path'] = []
     call add(s:echoMsg['path'], 'ERROR: Incorrect placeHolder: ''')
@@ -72,52 +74,60 @@ fun! s:InitVar()
     let s:collectMsg = {}
     let s:collectMsg = ioMessage_auto#DebugOrError(s:collectMsg, '', '')
 
-    if !exists('g:pathToFileList_quickEdit')
-        \ || (type(g:pathToFileList_quickEdit) !=? v:t_dict)
-        \ || !exists('g:pathToFileList_quickEdit[''file''][0]')
-        \ || !exists('g:pathToFileList_quickEdit[''file''][1]')
+    let l:error = 0
 
-        let g:pathToFileList_quickEdit
+    if exists('g:path2FileList_quickEdit')
+        \ && exists('g:path2FileList_quickEdit[''var''][1]')
+        let l:path2Var =
+        \ ioMessage_auto#DelTrailSlash(
+        \ g:path2FileList_quickEdit['var'][0])
+        \ . '/' . g:path2FileList_quickEdit['var'][1]
+        if filereadable(l:path2Var)
+            silent exe 'source ' . l:path2Var
+        endif
+        if !exists('g:path2FileList_quickEdit')
+            \ || !exists('g:path2FileList_quickEdit[''file''][1]')
+            \ || !exists('g:path2FileList_quickEdit[''var''][1]')
+            \ || !exists('g:path2FileList_quickEdit[''arg''][1]')
+
+            let l:error = 1
+        endif
+    else
+        let l:error = 1
+    endif
+
+    if l:error > 0
+        let g:path2FileList_quickEdit
         \ = {'file': [], 'var': [], 'arg': []}
         let s:collectMsg = ioMessage_auto#DebugOrError(s:collectMsg
         \ , '', s:echoMsg['path'][1])
 
-        let s:pathToFileList = ''
+        let s:path2FileList = ''
         return
     endif
-    let s:path_file = deepcopy(g:pathToFileList_quickEdit)
 
-    if exists('s:path_file[''var''][1]')
-        let l:pathToVar
-        \ = getText_auto#CutTrailSlash(s:path_file['var'][0]) . '/'
-        \ . s:path_file['var'][1]
-        if filereadable(l:pathToVar)
-            exe 'source ' . l:pathToVar
-        endif
-    endif
+    let s:path_file = deepcopy(g:path2FileList_quickEdit)
 
-    if exists('s:path_file[''arg''][0]')
-        \ && (s:path_file['arg'][0] =~? s:pattern['tab'])
+    if (s:path_file['arg'][0] =~? s:pattern['tab'])
         let s:defArg['tab'] = s:path_file['arg'][0]
     endif
-    if exists('s:path_file[''arg''][1]')
-        \ && (s:path_file['arg'][1] =~? s:pattern['back'])
+    if (s:path_file['arg'][1] =~? s:pattern['back'])
         let s:defArg['back'] = s:path_file['arg'][1]
     endif
 
-    if !exists('g:pathToPlaceholder_quickEdit')
-        let g:pathToPlaceholder_quickEdit = {}
+    if !exists('g:path2Placeholder_quickEdit')
+        let g:path2Placeholder_quickEdit = {}
     endif
-    let s:path_place = deepcopy(g:pathToPlaceholder_quickEdit)
+    let s:path_place = deepcopy(g:path2Placeholder_quickEdit)
 
-    let l:err_path = ioMessage_auto#SearchDict(
+    let l:err_path = ioMessage_auto#SearchDictList(
     \ s:path_file['file'][0]
     \ , s:path_place, s:pattern['dict'], '\1', '\2')
     let l:path = l:err_path[1]
-    let l:path = getText_auto#CutTrailSlash(l:path)
+    let l:path = ioMessage_auto#DelTrailSlash(l:path)
 
-    let s:pathToFileList = l:path . '/' . s:path_file['file'][1]
-    if !filereadable(s:pathToFileList)
+    let s:path2FileList = l:path . '/' . s:path_file['file'][1]
+    if !filereadable(s:path2FileList)
         let s:collectMsg = ioMessage_auto#DebugOrError(s:collectMsg
         \ , '', s:echoMsg['path'][2])
         let s:collectMsg = ioMessage_auto#DebugOrError(s:collectMsg
@@ -163,7 +173,7 @@ fun! s:Range(keyword)
 
         let s:collectMsg = ioMessage_auto#DebugOrError(s:collectMsg
         \ , '', s:echoMsg['note'][2])
-        call getText_auto#OpenFile('close', s:pathToFileList)
+        call getText_auto#OpenFile('close', s:path2FileList)
         return
 
     else
@@ -182,7 +192,7 @@ fun! s:FileList()
     let l:command_path = '\v^' . s:pattern['command']
 
     let l:rawText = getText_auto#RawText(l:range, 1, -1)
-    let l:noComment = getText_auto#NoSpace(l:rawText, l:comment)
+    let l:noComment = ioMessage_auto#DelSpace(l:rawText, l:comment, 0)
 
     let l:idx_split
     \ = ioMessage_auto#GetSplitIdx(l:noComment, l:command_path, 0)
@@ -217,7 +227,7 @@ fun! s:CommandList()
         endif
 
         let l:path = substitute(l:com_path, l:split, '\2', '')
-        let l:err_path = ioMessage_auto#SearchDict(
+        let l:err_path = ioMessage_auto#SearchDictList(
         \ l:path
         \ , s:path_place, s:pattern['dict'], '\1', '\2')
         let l:error = l:err_path[0]
@@ -225,7 +235,7 @@ fun! s:CommandList()
             break
         endif
         let l:path = l:err_path[1]
-        let l:path = getText_auto#CutTrailSlash(l:path)
+        let l:path = ioMessage_auto#DelTrailSlash(l:path)
 
         let l:err_file = s:ConvertFileName(l:file)
         let l:error = l:err_file[0]
@@ -261,7 +271,7 @@ fun! s:CommandList()
     let s:CommandList = l:commandList
 endfun
 
-fun! s:MoveToTab()
+fun! s:Move2Tab()
     if s:dynArg['hasTab'] == 0
         let s:tabStart = '.'
         return
@@ -295,16 +305,16 @@ fun! s:ExeCommand()
 
         for l:subItem in l:item
             let l:path_file = l:exe[1]
-            let l:pathTofile = l:path_file . '/' . l:subItem
+            let l:path2file = l:path_file . '/' . l:subItem
 
-            if bufexists(l:pathTofile)
+            if bufexists(l:path2file)
                 if l:exe[0] =~# 'edit'
-                    exe 'silent buffer ' . bufname(l:pathTofile)
+                    silent exe 'buffer ' . bufname(l:path2file)
                 else
-                    exe 'silent tabe ' . bufname(l:pathTofile)
+                    silent exe 'tabe ' . bufname(l:path2file)
                 endif
-            elseif filereadable(l:pathTofile)
-                exe 'silent ' . l:exe[0] . ' ' . l:pathTofile
+            elseif filereadable(l:path2file)
+                silent exe l:exe[0] . ' ' . l:path2file
                 call getText_auto#ChangeDir()
 
             else
@@ -317,7 +327,7 @@ fun! s:ExeCommand()
 
                 let s:collectMsg
                 \ = ioMessage_auto#DebugOrError(s:collectMsg
-                \ , l:pathTofile, '')
+                \ , l:path2file, '')
             endif
         endfor
     endfor
@@ -334,7 +344,7 @@ fun! s:ConvertFileName(fileNameList)
     let l:newFile = []
 
     for l:item in l:file
-        let l:err_file = ioMessage_auto#SearchDict(
+        let l:err_file = ioMessage_auto#SearchDictList(
         \ l:item
         \ , s:path_place, s:pattern['dict'], '\1', '\2')
         let l:error = l:err_file[0]
@@ -387,9 +397,9 @@ fun! quickEdit_auto#Main(...)
     call s:InitVar()
 
     let l:argList = copy(a:000)
-    let l:filterFull = 'v:val !~ ''' . s:pattern['full'] . ''''
-    let l:filterTab = 'v:val =~ ''' . s:pattern['tab'] . ''''
-    let l:filterBack = 'v:val =~ ''' . s:pattern['back'] . ''''
+    let l:filterFull = 'v:val !~? ''' . s:pattern['full'] . ''''
+    let l:filterTab = 'v:val =~? ''' . s:pattern['tab'] . ''''
+    let l:filterBack = 'v:val =~? ''' . s:pattern['back'] . ''''
 
     let l:keyWord = ioMessage_auto#FilterList(l:argList
     \ , l:filterFull, expand('<cword>'))
@@ -405,13 +415,13 @@ fun! quickEdit_auto#Main(...)
 
     let l:funs = []
     call add(l:funs, 'getText_auto#OpenFile(''open'','''
-    \ . s:pathToFileList . ''')')
+    \ . s:path2FileList . ''')')
     call add(l:funs, 's:Range(''' . l:keyWord . ''')')
     call add(l:funs, 's:FileList()')
     call add(l:funs, 'getText_auto#OpenFile(''close'','''
-    \ . s:pathToFileList . ''')')
+    \ . s:path2FileList . ''')')
     call add(l:funs, 's:CommandList()')
-    call add(l:funs, 's:MoveToTab()')
+    call add(l:funs, 's:Move2Tab()')
     call add(l:funs, 's:ExeCommand()')
 
     if l:debug
@@ -430,7 +440,10 @@ fun! quickEdit_auto#Main(...)
             if l:debug
                 call s:EchoDebugOrError(1)
             endif
-            call confirm(s:collectMsg.error[0])
+            if l:debug < 1
+                redraw
+            endif
+            call ioMessage_auto#EchoHi(s:collectMsg.error[0], 'Error')
             return
         endif
     endfor
