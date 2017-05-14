@@ -45,7 +45,7 @@ fun! s:LoadStaticVar()
     \, 'NOTE: Check ''g:path2Placeholder_quickEdit''.')
 
     let s:echoMsg['headTail'] = []
-    call add(s:echoMsg['headTail'], '======Calling Function(s)======')
+    call add(s:echoMsg['headTail'], '======Break point======')
     call add(s:echoMsg['headTail'], '======End of Line======')
 
     let s:echoMsg['title'] = []
@@ -62,8 +62,6 @@ fun! s:LoadStaticVar()
     let s:echoMsg['funs'] = []
     call add(s:echoMsg['funs'], 's:InitVar()')
     call add(s:echoMsg['funs'], 'quickEdit_auto#Main')
-    call add(s:echoMsg['funs'], ', process command args')
-    call add(s:echoMsg['funs'], ', break')
 
     let s:echoMsg['keyword'] = []
     call add(s:echoMsg['keyword'], 'Error: Invalid keyword: ')
@@ -498,14 +496,10 @@ fun! quickEdit_auto#Main(...)
         if (l:breakpoint[0] == 0)
             echom s:echoMsg['funs'][0]
         elseif (l:breakpoint[0] == 1)
-            echom s:echoMsg['funs'][0] . s:echoMsg['funs'][3]
+            echom s:echoMsg['funs'][0]
         endif
-        if (l:breakpoint[0] == 0)
-            if (l:breakpoint[1] == 0)
-                echom l:mainFun . s:echoMsg['funs'][2]
-            elseif (l:breakpoint[1] == 1)
-                echom l:mainFun . s:echoMsg['funs'][3]
-            endif
+        if (l:breakpoint[0] == 0) && (l:breakpoint[1] == 0)
+            echom l:mainFun
         endif
     endif
 
