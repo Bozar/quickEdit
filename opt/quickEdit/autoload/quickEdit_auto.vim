@@ -441,9 +441,9 @@ endfun
 fun! quickEdit_auto#Main(...)
     call s:InitVar()
     if !empty(s:storeMsg['error'])
-        let l:breakpoint = [1, 0]
+        let l:breakpoint = 1
     else
-        let l:breakpoint = [0, 0]
+        let l:breakpoint = 0
     endif
 
     let l:argList = copy(a:000)
@@ -465,8 +465,6 @@ fun! quickEdit_auto#Main(...)
         \, '', s:echoMsg['keyword'][1])
         let s:storeMsg = ioMessage_auto#DebugOrError(s:storeMsg
         \, '', s:echoMsg['note'][0])
-
-        let l:breakpoint[1] = 1
     endif
 
     let l:arg = ioMessage_auto#FilterList(l:argList
@@ -493,12 +491,8 @@ fun! quickEdit_auto#Main(...)
     if l:debug
         redraw
         call ioMessage_auto#EchoHi(s:echoMsg['headTail'][0], 'Type')
-        if (l:breakpoint[0] == 0)
-            echom s:echoMsg['funs'][0]
-        elseif (l:breakpoint[0] == 1)
-            echom s:echoMsg['funs'][0]
-        endif
-        if (l:breakpoint[0] == 0) && (l:breakpoint[1] == 0)
+        echom s:echoMsg['funs'][0]
+        if (l:breakpoint == 0)
             echom l:mainFun
         endif
     endif
