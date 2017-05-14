@@ -44,11 +44,13 @@ fun! s:LoadStaticVar()
     call add(s:echoMsg['note']
     \, 'NOTE: Check ''g:path2Placeholder_quickEdit''.')
 
+    let s:echoMsg['headTail'] = []
+    call add(s:echoMsg['headTail'], '======Calling Function(s)======')
+    call add(s:echoMsg['headTail'], '======End of Line======')
+
     let s:echoMsg['title'] = []
-    call add(s:echoMsg['title'], '======Calling Function(s)======')
     call add(s:echoMsg['title'], '======Error Message(s)======')
     call add(s:echoMsg['title'], '======Debug Message(s)======')
-    call add(s:echoMsg['title'], '======End of Line======')
     call add(s:echoMsg['title'], '======File(s) not Found======')
     call add(s:echoMsg['title'], '======Execute string(s)======')
 
@@ -382,28 +384,28 @@ fun! s:EchoDebugOrError(full)
     let l:full = a:full
 
     if !empty(l:errorMsg)
-        call ioMessage_auto#EchoHi(s:echoMsg['title'][1], 'Error')
+        call ioMessage_auto#EchoHi(s:echoMsg['title'][0], 'Error')
         for l:item in l:errorMsg
             echom l:item
         endfor
     endif
 
     if !empty(l:errorFile)
-        call ioMessage_auto#EchoHi(s:echoMsg['title'][4], 'Error')
+        call ioMessage_auto#EchoHi(s:echoMsg['title'][2], 'Error')
         for l:item in l:errorFile
             echom l:item
         endfor
     endif
 
     if !empty(l:debugStr) && l:full
-        call ioMessage_auto#EchoHi(s:echoMsg['title'][5], 'Type')
+        call ioMessage_auto#EchoHi(s:echoMsg['title'][3], 'Type')
         for l:item in l:debugStr
             echom l:item
         endfor
     endif
 
     if !empty(l:debugMsg) && l:full
-        call ioMessage_auto#EchoHi(s:echoMsg['title'][2], 'Type')
+        call ioMessage_auto#EchoHi(s:echoMsg['title'][1], 'Type')
         for l:item in l:debugMsg
             if index(l:value, l:item) > -1
                 call ioMessage_auto#EchoHi(l:item, 'Identifier')
@@ -414,7 +416,7 @@ fun! s:EchoDebugOrError(full)
     endif
 
     if l:full
-        call ioMessage_auto#EchoHi(s:echoMsg['title'][3], 'Type')
+        call ioMessage_auto#EchoHi(s:echoMsg['headTail'][1], 'Type')
     endif
 endfun
 
@@ -492,7 +494,7 @@ fun! quickEdit_auto#Main(...)
 
     if l:debug
         redraw
-        call ioMessage_auto#EchoHi(s:echoMsg['title'][0], 'Type')
+        call ioMessage_auto#EchoHi(s:echoMsg['headTail'][0], 'Type')
         if (l:breakpoint[0] == 0)
             echom s:echoMsg['funs'][0]
         elseif (l:breakpoint[0] == 1)
