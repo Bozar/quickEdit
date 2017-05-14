@@ -47,6 +47,7 @@ fun! s:LoadStaticVar()
     call add(s:echoMsg['title'], '======Debug Message(s)======')
     call add(s:echoMsg['title'], '======End of Line======')
     call add(s:echoMsg['title'], '======File(s) not Found======')
+    call add(s:echoMsg['title'], '======Execute string(s)======')
 
     let s:echoMsg['subTitle'] = []
     call add(s:echoMsg['subTitle'], '===s:Range===')
@@ -71,6 +72,8 @@ fun! s:InitVar()
     let s:storeMsg = ioMessage_auto#DebugOrError(s:storeMsg, '', '')
     let s:storeFile = {}
     let s:storeFile = ioMessage_auto#DebugOrError(s:storeFile, '', '')
+    let s:storeExeStr = {}
+    let s:storeExeStr = ioMessage_auto#DebugOrError(s:storeExeStr, '', '')
 
     let l:error = 0
 
@@ -297,6 +300,8 @@ endfun
 fun! s:ExeCommand()
     let l:command = deepcopy(s:CommandList)
     let l:fileNotFound = 1
+    let l:specialString = 1
+    let l:idxItem = 0
 
     for l:item in l:command
         let l:exe = remove(l:item, 0, 1)
@@ -322,6 +327,16 @@ fun! s:ExeCommand()
                 \ = ioMessage_auto#DelSpace(l:exeString, '', 0)
                 silent exe l:exeString[0]
 
+                if l:specialString
+                    let s:storeExeStr
+                    \ = ioMessage_auto#DebugOrError(s:storeExeStr
+                    \ , s:echoMsg['title'][5], '')
+                    let l:specialString = 0
+                endif
+                let s:storeExeStr
+                \ = ioMessage_auto#DebugOrError(s:storeExeStr
+                \ , l:idxItem . ': ' . l:exeString[0], '')
+
             else
                 if l:fileNotFound
                     let s:storeFile
@@ -329,12 +344,12 @@ fun! s:ExeCommand()
                     \ , s:echoMsg['title'][4], '')
                     let l:fileNotFound = 0
                 endif
-
                 let s:storeFile
                 \ = ioMessage_auto#DebugOrError(s:storeFile
                 \ , l:path2file, '')
             endif
         endfor
+        let l:idxItem += 1
     endfor
 
     if s:moveBack && s:dynArg['hasTab']
@@ -377,9 +392,16 @@ fun! s:EchoDebugOrError(full)
         endfor
     endif
 
-    if !empty(s:storeFile['debug'])
+    if exists('s:storeFile[''debug''][1]')
         call ioMessage_auto#EchoHi(s:echoMsg['title'][4], 'Error')
         for l:item in s:storeFile['debug'][1:]
+            echom l:item
+        endfor
+    endif
+
+    if exists('s:storeExeStr[''debug''][1]') && l:full
+        call ioMessage_auto#EchoHi(s:echoMsg['title'][5], 'Type')
+        for l:item in s:storeExeStr['debug'][1:]
             echom l:item
         endfor
     endif
