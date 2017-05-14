@@ -35,33 +35,36 @@ fun! getText_auto#Range(start, end, looseStart)
     let l:looseStart = a:looseStart
     let l:start = 0
     let l:end = 0
-    let l:error = []
+    let l:error = {}
+    let l:continue = 1
 
     1normal! 0
-    if empty(l:error) && search(l:pat_start, 'cW')
+    if l:continue && search(l:pat_start, 'cW')
         let l:start = line('.')
     else
-        call add(l:error, 'start')
+        let l:error['start'] = l:pat_start
+        let l:continue = 0
     endif
-    if empty(l:error) && search(l:pat_end, 'cW')
+
+    if l:continue && search(l:pat_end, 'cW')
         let l:end = line('.')
     else
-        call add(l:error, 'end')
+        let l:error['end'] = l:pat_end
+        let l:continue = 0
     endif
 
     $normal! $
-    if empty(l:error) && search(l:pat_start, 'bcW')
-        \&& (line('.') != l:start)
-        let l:start = line('.')
-        call add(l:error, 'duplicate')
+    if l:continue && search(l:pat_start, 'bcW') && (line('.') != l:start)
+        let l:error['duplicate'] = line('.')
+        let l:continue = 0
     endif
 
     exe l:end . 'normal! $'
-    if empty(l:error) && (l:looseStart != '')
+    if l:continue && (l:looseStart != '')
         \&& search(l:looseStart, 'bcW', l:start)
         \&& (line('.') != l:start)
-        let l:start = line('.')
-        call add(l:error, 'loose')
+        let l:error['loose'] = line('.')
+        let l:continue = 0
     endif
 
     let l:result = [l:error, [l:start, l:end]]

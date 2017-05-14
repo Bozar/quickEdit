@@ -23,7 +23,7 @@ fun! s:LoadStaticVar()
     let s:echoMsg = {}
 
     let s:echoMsg['range'] = []
-    call add(s:echoMsg['range'], 'ERROR: Incorrect opening tag.')
+    call add(s:echoMsg['range'], 'ERROR: Keyword not found: ''')
     call add(s:echoMsg['range'], 'ERROR: Incorrect closing tag.')
     call add(s:echoMsg['range']
     \, 'ERROR: Containing duplicated opening tag in ')
@@ -31,16 +31,19 @@ fun! s:LoadStaticVar()
     \, 'ERROR: Containing another opening tag in ')
 
     let s:echoMsg['path'] = []
-    call add(s:echoMsg['path'], 'ERROR: Incorrect placeHolder: ''')
-    call add(s:echoMsg['path'], 'ERROR: Incorrect g:fileList[''file''].')
+    call add(s:echoMsg['path'], 'ERROR: Incorrect placeholder: ''')
+    call add(s:echoMsg['path']
+    \, 'ERROR: Incorrect g:path2FileList_quickEdit[''file''].')
     call add(s:echoMsg['path'], 'ERROR: FileList not found.')
 
     let s:echoMsg['note'] = []
     call add(s:echoMsg['note'], 'NOTE: Check command argument.')
-    call add(s:echoMsg['note'], 'NOTE: Check g:fileList[''file''].')
+    call add(s:echoMsg['note']
+    \, 'NOTE: Check g:path2FileList_quickEdit[''file''].')
     call add(s:echoMsg['note'], 'NOTE: Check fileList.')
-    call add(s:echoMsg['note'], 'NOTE: Check ''g:placeHolder''.')
-    call add(s:echoMsg['note'], 'NOTE: A valid keyWord only contains '
+    call add(s:echoMsg['note']
+    \, 'NOTE: Check ''g:path2Placeholder_quickEdit''.')
+    call add(s:echoMsg['note'], 'NOTE: A valid keyword only contains '
     \. 'alphabets, numbers or underlines.')
 
     let s:echoMsg['title'] = []
@@ -59,7 +62,7 @@ fun! s:LoadStaticVar()
     let s:echoMsg['misc'] = []
     call add(s:echoMsg['misc'], 's:InitVar()')
     call add(s:echoMsg['misc']
-    \, 'Error: Invalid keyWord: ')
+    \, 'Error: Invalid keyword: ')
 
     let s:loadStaticVar = 1
 endfun
@@ -148,26 +151,27 @@ fun! s:Range(keyword)
     \= getText_auto#Range(l:start, l:end, l:looseStart)
     let l:error = l:error_range[0]
     let l:range = l:error_range[1]
-    let l:errLine = l:error_range[1][0]
 
-    if !empty(l:error)
-        if index(l:error, 'start') > -1
+    if !empty(keys(l:error))
+        if exists('l:error[''start'']')
             let s:storeMsg = ioMessage_auto#DebugOrError(s:storeMsg
-            \, '', s:echoMsg['range'][0])
+            \, '', s:echoMsg['range'][0] . a:keyword . '''.')
             let s:storeMsg = ioMessage_auto#DebugOrError(s:storeMsg
             \, '', s:echoMsg['note'][0])
 
-        elseif index(l:error, 'end') > -1
+        elseif exists('l:error[''end'']')
             let s:storeMsg = ioMessage_auto#DebugOrError(s:storeMsg
             \, '', s:echoMsg['range'][1])
 
-        elseif index(l:error, 'duplicate') > -1
+        elseif exists('l:error[''duplicate'']')
             let s:storeMsg = ioMessage_auto#DebugOrError(s:storeMsg
-            \, '', s:echoMsg['range'][2] . 'Line ' . l:errLine . '.')
+            \, '', s:echoMsg['range'][2]
+            \. 'Line ' . l:error['duplicate'] . '.')
 
-        elseif index(l:error, 'loose') > -1
+        elseif exists('l:error[''loose'']')
             let s:storeMsg = ioMessage_auto#DebugOrError(s:storeMsg
-            \, '', s:echoMsg['range'][3] . 'Line ' . l:errLine . '.')
+            \, '', s:echoMsg['range'][3]
+            \. 'Line ' . l:error['loose'] . '.')
         endif
 
         let s:storeMsg = ioMessage_auto#DebugOrError(s:storeMsg
@@ -438,11 +442,11 @@ fun! quickEdit_auto#Main(...)
     let l:filterTab = 'v:val =~? ''' . s:pattern['tab'] . ''''
     let l:filterBack = 'v:val =~? ''' . s:pattern['back'] . ''''
 
-    let l:keyWord = ioMessage_auto#FilterList(l:argList
+    let l:keyword = ioMessage_auto#FilterList(l:argList
     \, l:filterFull, expand('<cword>'))
-    if l:keyWord !~? '^\v(\a|\d|_)+$'
+    if l:keyword !~? '^\v(\a|\d|_)+$'
         let s:storeMsg = ioMessage_auto#DebugOrError(s:storeMsg
-        \, '', s:echoMsg['misc'][1] . '''' . l:keyWord . '''.')
+        \, '', s:echoMsg['misc'][1] . '''' . l:keyword . '''.')
         let s:storeMsg = ioMessage_auto#DebugOrError(s:storeMsg
         \, '', s:echoMsg['note'][4])
         let s:storeMsg = ioMessage_auto#DebugOrError(s:storeMsg
@@ -461,7 +465,7 @@ fun! quickEdit_auto#Main(...)
     let l:funs = []
     call add(l:funs, 'getText_auto#OpenFile(''open'','''
     \. s:path2FileList . ''')')
-    call add(l:funs, 's:Range(''' . l:keyWord . ''')')
+    call add(l:funs, 's:Range(''' . l:keyword . ''')')
     call add(l:funs, 's:FileList()')
     call add(l:funs, 'getText_auto#OpenFile(''close'','''
     \. s:path2FileList . ''')')
