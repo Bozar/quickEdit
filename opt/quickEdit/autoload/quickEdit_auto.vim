@@ -299,8 +299,6 @@ endfun
 
 fun! s:ExeCommand()
     let l:command = deepcopy(s:CommandList)
-    let l:fileNotFound = 1
-    let l:specialString = 1
     let l:idxItem = 0
 
     for l:item in l:command
@@ -327,26 +325,16 @@ fun! s:ExeCommand()
                 \ = ioMessage_auto#DelSpace(l:exeString, '', 0)
                 silent exe l:exeString[0]
 
-                if l:specialString
-                    let s:storeExeStr
-                    \ = ioMessage_auto#DebugOrError(s:storeExeStr
-                    \ , s:echoMsg['title'][5], '')
-                    let l:specialString = 0
-                endif
                 let s:storeExeStr
                 \ = ioMessage_auto#DebugOrError(s:storeExeStr
                 \ , l:idxItem . ': ' . l:exeString[0], '')
 
             else
-                if l:fileNotFound
-                    let s:storeFile
-                    \ = ioMessage_auto#DebugOrError(s:storeFile
-                    \ , s:echoMsg['title'][4], '')
-                    let l:fileNotFound = 0
-                endif
                 let s:storeFile
                 \ = ioMessage_auto#DebugOrError(s:storeFile
-                \ , l:path2file, '')
+                \ , '', l:path2file)
+
+                return
             endif
         endfor
         let l:idxItem += 1
@@ -382,6 +370,8 @@ endfun
 fun! s:EchoDebugOrError(full)
     let l:debugMsg = deepcopy(s:storeMsg['debug'])
     let l:errorMsg = deepcopy(s:storeMsg['error'])
+    let l:errorFile = deepcopy(s:storeFile['error'])
+    let l:debugStr = deepcopy(s:storeExeStr['debug'])
     let l:value = deepcopy(s:echoMsg['subTitle'])
     let l:full = a:full
 
@@ -392,21 +382,21 @@ fun! s:EchoDebugOrError(full)
         endfor
     endif
 
-    if exists('s:storeFile[''debug''][1]')
+    if !empty(l:errorFile)
         call ioMessage_auto#EchoHi(s:echoMsg['title'][4], 'Error')
-        for l:item in s:storeFile['debug'][1:]
+        for l:item in l:errorFile
             echom l:item
         endfor
     endif
 
-    if exists('s:storeExeStr[''debug''][1]') && l:full
+    if !empty(l:debugStr) && l:full
         call ioMessage_auto#EchoHi(s:echoMsg['title'][5], 'Type')
-        for l:item in s:storeExeStr['debug'][1:]
+        for l:item in l:debugStr
             echom l:item
         endfor
     endif
 
-    if l:full
+    if !empty(l:debugMsg) && l:full
         call ioMessage_auto#EchoHi(s:echoMsg['title'][2], 'Type')
         for l:item in l:debugMsg
             if index(l:value, l:item) > -1
@@ -415,7 +405,9 @@ fun! s:EchoDebugOrError(full)
                 echom l:item
             endif
         endfor
+    endif
 
+    if l:full
         call ioMessage_auto#EchoHi(s:echoMsg['title'][3], 'Type')
     endif
 endfun
@@ -450,6 +442,7 @@ fun! quickEdit_auto#Main(...)
     call add(l:funs, 's:CommandList()')
     call add(l:funs, 's:Move2Tab()')
     call add(l:funs, 's:ExeCommand()')
+    call add(l:funs, '')
 
     if l:debug
         call ioMessage_auto#EchoHi(s:echoMsg['title'][0], 'Type')
@@ -457,10 +450,14 @@ fun! quickEdit_auto#Main(...)
     endif
 
     for l:item in l:funs
-        if empty(s:storeMsg['error'])
-            exe 'call ' . l:item
-            if l:debug
-                echom l:item
+        let l:errMsg = copy(s:storeMsg['error'])
+        let l:errFile = copy(s:storeFile['error'])
+        if empty(l:errMsg) && empty(l:errFile)
+            if !empty(l:item)
+                exe 'call ' . l:item
+                if l:debug
+                    echom l:item
+                endif
             endif
 
         else
@@ -468,8 +465,19 @@ fun! quickEdit_auto#Main(...)
                 call s:EchoDebugOrError(1)
             else
                 redraw
-                call ioMessage_auto#EchoHi(s:storeMsg['error'][0]
-                \ , 'Error')
+                if !empty(l:errMsg)
+                    call ioMessage_auto#EchoHi(s:echoMsg['title'][1]
+                    \ , 'Error')
+                    for l:item in l:errMsg
+                        echom l:item
+                    endfor
+                elseif !empty(l:errFile)
+                    call ioMessage_auto#EchoHi(s:echoMsg['title'][4]
+                    \ , 'Error')
+                    for l:item in l:errFile
+                        echom l:item
+                    endfor
+                endif
             endif
             return
         endif
