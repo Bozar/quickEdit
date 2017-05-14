@@ -17,7 +17,7 @@ fun! s:LoadStaticVar()
     let s:pattern['looseStart'] = '^\v\s*[^\/]\S.{-}\s+\{\s*$'
 
     let s:pattern['dict']
-    \ = '^\v\' . s:pattern['prefix'] . '\s*(\S.{-})\.(\d+)$'
+    \= '^\v\' . s:pattern['prefix'] . '\s*(\S.{-})\.(\d+)$'
     let s:pattern['empty'] = '^\v\s*$'
 
     let s:echoMsg = {}
@@ -26,9 +26,9 @@ fun! s:LoadStaticVar()
     call add(s:echoMsg['range'], 'ERROR: Incorrect opening tag.')
     call add(s:echoMsg['range'], 'ERROR: Incorrect closing tag.')
     call add(s:echoMsg['range']
-    \ , 'ERROR: Containing duplicated opening tag in ')
+    \, 'ERROR: Containing duplicated opening tag in ')
     call add(s:echoMsg['range']
-    \ , 'ERROR: Containing another opening tag in ')
+    \, 'ERROR: Containing another opening tag in ')
 
     let s:echoMsg['path'] = []
     call add(s:echoMsg['path'], 'ERROR: Incorrect placeHolder: ''')
@@ -78,18 +78,18 @@ fun! s:InitVar()
     let l:error = 0
 
     if exists('g:path2FileList_quickEdit')
-        \ && exists('g:path2FileList_quickEdit[''var''][1]')
-        let l:path2Var =
-        \ ioMessage_auto#DelTrailSlash(
-        \ g:path2FileList_quickEdit['var'][0])
-        \ . '/' . g:path2FileList_quickEdit['var'][1]
+        \&& exists('g:path2FileList_quickEdit[''var''][1]')
+        let l:path2Var
+        \= ioMessage_auto#DelTrailSlash(
+        \g:path2FileList_quickEdit['var'][0])
+        \. '/' . g:path2FileList_quickEdit['var'][1]
         if filereadable(l:path2Var)
             silent exe 'source ' . l:path2Var
         endif
         if !exists('g:path2FileList_quickEdit')
-            \ || !exists('g:path2FileList_quickEdit[''file''][1]')
-            \ || !exists('g:path2FileList_quickEdit[''var''][1]')
-            \ || !exists('g:path2FileList_quickEdit[''arg''][1]')
+            \|| !exists('g:path2FileList_quickEdit[''file''][1]')
+            \|| !exists('g:path2FileList_quickEdit[''var''][1]')
+            \|| !exists('g:path2FileList_quickEdit[''arg''][1]')
 
             let l:error = 1
         endif
@@ -99,9 +99,9 @@ fun! s:InitVar()
 
     if l:error > 0
         let g:path2FileList_quickEdit
-        \ = {'file': [], 'var': [], 'arg': []}
+        \= {'file': [], 'var': [], 'arg': []}
         let s:storeMsg = ioMessage_auto#DebugOrError(s:storeMsg
-        \ , '', s:echoMsg['path'][1])
+        \, '', s:echoMsg['path'][1])
 
         let s:path2FileList = ''
         return
@@ -122,19 +122,19 @@ fun! s:InitVar()
     let s:path_place = deepcopy(g:path2Placeholder_quickEdit)
 
     let l:err_path = ioMessage_auto#SearchDictList(
-    \ s:path_file['file'][0]
-    \ , s:path_place, s:pattern['dict'], '\1', '\2')
+    \s:path_file['file'][0]
+    \, s:path_place, s:pattern['dict'], '\1', '\2')
     let l:path = l:err_path[1]
     let l:path = ioMessage_auto#DelTrailSlash(l:path)
 
     let s:path2FileList = l:path . '/' . s:path_file['file'][1]
     if !filereadable(s:path2FileList)
         let s:storeMsg = ioMessage_auto#DebugOrError(s:storeMsg
-        \ , '', s:echoMsg['path'][2])
+        \, '', s:echoMsg['path'][2])
         let s:storeMsg = ioMessage_auto#DebugOrError(s:storeMsg
-        \ , '', s:echoMsg['note'][1])
+        \, '', s:echoMsg['note'][1])
         let s:storeMsg = ioMessage_auto#DebugOrError(s:storeMsg
-        \ , '', s:echoMsg['note'][3])
+        \, '', s:echoMsg['note'][3])
 
         return
     endif
@@ -142,12 +142,12 @@ endfun
 
 fun! s:Range(keyword)
     let l:start
-    \ = s:pattern['start'][0] . a:keyword . s:pattern['start'][1]
+    \= s:pattern['start'][0] . a:keyword . s:pattern['start'][1]
     let l:end = s:pattern['end']
     let l:looseStart = s:pattern['looseStart']
 
     let l:error_range
-    \ = getText_auto#Range(l:start, l:end, l:looseStart)
+    \= getText_auto#Range(l:start, l:end, l:looseStart)
     let l:error = l:error_range[0]
     let l:range = l:error_range[1]
     let l:errLine = l:error_range[1][0]
@@ -155,34 +155,34 @@ fun! s:Range(keyword)
     if !empty(l:error)
         if index(l:error, 'start') > -1
             let s:storeMsg = ioMessage_auto#DebugOrError(s:storeMsg
-            \ , '', s:echoMsg['range'][0])
+            \, '', s:echoMsg['range'][0])
             let s:storeMsg = ioMessage_auto#DebugOrError(s:storeMsg
-            \ , '', s:echoMsg['note'][0])
+            \, '', s:echoMsg['note'][0])
 
         elseif index(l:error, 'end') > -1
             let s:storeMsg = ioMessage_auto#DebugOrError(s:storeMsg
-            \ , '', s:echoMsg['range'][1])
+            \, '', s:echoMsg['range'][1])
 
         elseif index(l:error, 'duplicate') > -1
             let s:storeMsg = ioMessage_auto#DebugOrError(s:storeMsg
-            \ , '', s:echoMsg['range'][2] . 'Line ' . l:errLine . '.')
+            \, '', s:echoMsg['range'][2] . 'Line ' . l:errLine . '.')
 
         elseif index(l:error, 'loose') > -1
             let s:storeMsg = ioMessage_auto#DebugOrError(s:storeMsg
-            \ , '', s:echoMsg['range'][3] . 'Line ' . l:errLine . '.')
+            \, '', s:echoMsg['range'][3] . 'Line ' . l:errLine . '.')
         endif
 
         let s:storeMsg = ioMessage_auto#DebugOrError(s:storeMsg
-        \ , '', s:echoMsg['note'][2])
+        \, '', s:echoMsg['note'][2])
         call getText_auto#OpenFile('close', s:path2FileList)
         return
 
     else
         let s:Range = l:range
         let s:storeMsg = ioMessage_auto#DebugOrError(s:storeMsg
-        \ , s:echoMsg['subTitle'][0], '')
+        \, s:echoMsg['subTitle'][0], '')
         let s:storeMsg
-        \ = ioMessage_auto#DebugOrError(s:storeMsg, s:Range, '')
+        \= ioMessage_auto#DebugOrError(s:storeMsg, s:Range, '')
 
     endif
 endfun
@@ -196,15 +196,15 @@ fun! s:FileList()
     let l:noComment = ioMessage_auto#DelSpace(l:rawText, l:comment, 0)
 
     let l:idx_split
-    \ = ioMessage_auto#GetSplitIdx(l:noComment, l:command_path, 0)
+    \= ioMessage_auto#GetSplitIdx(l:noComment, l:command_path, 0)
     let l:item_split = ioMessage_auto#SplitList(l:noComment, l:idx_split)
     let l:item_split = filter(l:item_split, 'len(v:val) > 1')
 
     let s:storeMsg = ioMessage_auto#DebugOrError(s:storeMsg
-    \ , s:echoMsg['subTitle'][1], '')
+    \, s:echoMsg['subTitle'][1], '')
     for l:tmp in l:item_split
         let s:storeMsg = ioMessage_auto#DebugOrError(s:storeMsg
-        \ , l:tmp, '')
+        \, l:tmp, '')
     endfor
 
     let s:FileList = l:item_split
@@ -229,8 +229,8 @@ fun! s:CommandList()
 
         let l:path = substitute(l:com_path, l:split, '\2', '')
         let l:err_path = ioMessage_auto#SearchDictList(
-        \ l:path
-        \ , s:path_place, s:pattern['dict'], '\1', '\2')
+        \l:path
+        \, s:path_place, s:pattern['dict'], '\1', '\2')
         let l:error = l:err_path[0]
         if !empty(l:error)
             break
@@ -254,19 +254,19 @@ fun! s:CommandList()
     if !empty(l:error)
         let l:echoErr = '?' . l:error[0] . '.' . l:error[1]
         let s:storeMsg = ioMessage_auto#DebugOrError(s:storeMsg
-        \ , '', s:echoMsg['path'][0] . l:echoErr . '''.')
+        \, '', s:echoMsg['path'][0] . l:echoErr . '''.')
         let s:storeMsg = ioMessage_auto#DebugOrError(s:storeMsg
-        \ , '', s:echoMsg['note'][2])
+        \, '', s:echoMsg['note'][2])
         let s:storeMsg = ioMessage_auto#DebugOrError(s:storeMsg
-        \ , '', s:echoMsg['note'][3])
+        \, '', s:echoMsg['note'][3])
         return
     endif
 
     let s:storeMsg = ioMessage_auto#DebugOrError(s:storeMsg
-    \ , s:echoMsg['subTitle'][2], '')
+    \, s:echoMsg['subTitle'][2], '')
     for l:item in l:commandList
         let s:storeMsg = ioMessage_auto#DebugOrError(s:storeMsg
-        \ , l:item, '')
+        \, l:item, '')
     endfor
 
     let s:CommandList = l:commandList
@@ -320,19 +320,19 @@ fun! s:ExeCommand()
 
             elseif l:subItem =~# '^\V??'
                 let l:exeString
-                \ = substitute(l:subItem, '^\V??\v(.*)$', '\1','')
+                \= substitute(l:subItem, '^\V??\v(.*)$', '\1','')
                 let l:exeString
-                \ = ioMessage_auto#DelSpace(l:exeString, '', 0)
+                \= ioMessage_auto#DelSpace(l:exeString, '', 0)
                 silent exe l:exeString[0]
 
                 let s:storeExeStr
-                \ = ioMessage_auto#DebugOrError(s:storeExeStr
-                \ , l:idxItem . ': ' . l:exeString[0], '')
+                \= ioMessage_auto#DebugOrError(s:storeExeStr
+                \, l:idxItem . ': ' . l:exeString[0], '')
 
             else
                 let s:storeFile
-                \ = ioMessage_auto#DebugOrError(s:storeFile
-                \ , '', l:path2file)
+                \= ioMessage_auto#DebugOrError(s:storeFile
+                \, '', l:path2file)
 
                 return
             endif
@@ -353,8 +353,8 @@ fun! s:ConvertFileName(fileNameList)
 
     for l:item in l:file
         let l:err_file = ioMessage_auto#SearchDictList(
-        \ l:item
-        \ , s:path_place, s:pattern['dict'], '\1', '\2')
+        \l:item
+        \, s:path_place, s:pattern['dict'], '\1', '\2')
         let l:error = l:err_file[0]
         if !empty(l:error)
             break
@@ -421,24 +421,24 @@ fun! quickEdit_auto#Main(...)
     let l:filterBack = 'v:val =~? ''' . s:pattern['back'] . ''''
 
     let l:keyWord = ioMessage_auto#FilterList(l:argList
-    \ , l:filterFull, expand('<cword>'))
+    \, l:filterFull, expand('<cword>'))
 
     let l:arg = ioMessage_auto#FilterList(l:argList
-    \ , l:filterTab, s:defArg['tab'])
+    \, l:filterTab, s:defArg['tab'])
     let s:newTab = tolower(l:arg)
     let l:debug = ioMessage_auto#CheckCase(l:arg, 'u')
 
     let l:arg = ioMessage_auto#FilterList(l:argList
-    \ , l:filterBack, s:defArg['back'])
+    \, l:filterBack, s:defArg['back'])
     let s:moveBack = ioMessage_auto#CheckCase(l:arg, 'l')
 
     let l:funs = []
     call add(l:funs, 'getText_auto#OpenFile(''open'','''
-    \ . s:path2FileList . ''')')
+    \. s:path2FileList . ''')')
     call add(l:funs, 's:Range(''' . l:keyWord . ''')')
     call add(l:funs, 's:FileList()')
     call add(l:funs, 'getText_auto#OpenFile(''close'','''
-    \ . s:path2FileList . ''')')
+    \. s:path2FileList . ''')')
     call add(l:funs, 's:CommandList()')
     call add(l:funs, 's:Move2Tab()')
     call add(l:funs, 's:ExeCommand()')

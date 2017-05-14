@@ -11,7 +11,7 @@ fun! getText_auto#OpenFile(stat, path2File)
         let s:cursor = getpos('.')
 
     elseif (a:stat ==? 'close') && bufexists(l:path)
-        \ && (bufnr('%') == bufnr(l:path))
+        \&& (bufnr('%') == bufnr(l:path))
         call setpos('.', s:cursor)
         if winnr('$') > 1
             wincmd c
@@ -51,15 +51,15 @@ fun! getText_auto#Range(start, end, looseStart)
 
     $normal! $
     if empty(l:error) && search(l:pat_start, 'bcW')
-        \ && (line('.') != l:start)
+        \&& (line('.') != l:start)
         let l:start = line('.')
         call add(l:error, 'duplicate')
     endif
 
     exe l:end . 'normal! $'
     if empty(l:error) && (l:looseStart != '')
-        \ && search(l:looseStart, 'bcW', l:start)
-        \ && (line('.') != l:start)
+        \&& search(l:looseStart, 'bcW', l:start)
+        \&& (line('.') != l:start)
         let l:start = line('.')
         call add(l:error, 'loose')
     endif

@@ -3,11 +3,11 @@ if (v:version < 800)
 endif
 
 if !exists('g:commandName_tab_quickEdit')
-    \ || g:commandName_tab_quickEdit =~ '^\s*$'
+    \|| g:commandName_tab_quickEdit =~ '^\s*$'
     let g:commandName_tab_quickEdit = 'QuickEditTabPage'
 endif
 if !exists(':' . g:commandName_tab_quickEdit)
     exe 'com! -nargs=* ' . g:commandName_tab_quickEdit
-    \ . ' call quickEdit_auto#Main(<f-args>)'
+    \. ' call quickEdit_auto#Main(<f-args>)'
 endif
 

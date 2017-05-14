@@ -34,12 +34,12 @@ fun! ioMessage_auto#SearchDictList(str, dict, patKeyIdx, patKey, patIdx)
     let l:dict = deepcopy(a:dict)
 
     let l:str
-    \ = ioMessage_auto#Str2KeyIdx(l:str, a:patKeyIdx, a:patKey, a:patIdx)
+    \= ioMessage_auto#Str2KeyIdx(l:str, a:patKeyIdx, a:patKey, a:patIdx)
     if l:str[0] == 0
         let l:result = ['' , l:str[1]]
     elseif l:str[0] == 1
         let l:result
-        \ = ioMessage_auto#GetDictValue(l:str[1], l:str[2], l:dict)
+        \= ioMessage_auto#GetDictValue(l:str[1], l:str[2], l:dict)
     endif
 
     return l:result
@@ -156,7 +156,7 @@ fun! ioMessage_auto#DelSpace(text, comment, inner)
     let l:pat_empty = '\v^\s*$'
 
     if (type(l:text) ==? v:t_float) || (type(l:text) ==? v:t_number)
-        \ || (type(l:text) ==? v:t_string)
+        \|| (type(l:text) ==? v:t_string)
         let l:text = [l:text]
     endif
 
