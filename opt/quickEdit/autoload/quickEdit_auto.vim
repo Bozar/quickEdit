@@ -26,9 +26,9 @@ fun! s:LoadStaticVar()
     call add(s:echoMsg['range'], 'ERROR: Keyword not found: ''')
     call add(s:echoMsg['range'], 'ERROR: Incorrect closing tag.')
     call add(s:echoMsg['range']
-    \, 'ERROR: Containing duplicated opening tag in ')
+    \, 'ERROR: Containing duplicated opening tag: ')
     call add(s:echoMsg['range']
-    \, 'ERROR: Containing another opening tag in ')
+    \, 'ERROR: Containing another opening tag: ')
 
     let s:echoMsg['path'] = []
     call add(s:echoMsg['path'], 'ERROR: Incorrect placeholder: ''')
@@ -37,7 +37,7 @@ fun! s:LoadStaticVar()
     call add(s:echoMsg['path'], 'ERROR: FileList not found.')
 
     let s:echoMsg['note'] = []
-    call add(s:echoMsg['note'], 'NOTE: Check command argument.')
+    call add(s:echoMsg['note'], 'NOTE: Check command argument(s).')
     call add(s:echoMsg['note']
     \, 'NOTE: Check g:path2FileList_quickEdit[''file''].')
     call add(s:echoMsg['note'], 'NOTE: Check fileList.')
