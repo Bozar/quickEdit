@@ -155,6 +155,11 @@ fun! ioMessage_auto#DelSpace(text, comment, inner)
     let l:pat_space = '\v^\s*(.{-})\s*$'
     let l:pat_empty = '\v^\s*$'
 
+    if (type(l:text) ==? v:t_float) || (type(l:text) ==? v:t_number)
+        \ || (type(l:text) ==? v:t_string)
+        let l:text = [l:text]
+    endif
+
     for l:tmpItem in l:text
         let l:shrink = substitute(l:tmpItem, l:pat_space, '\1', '')
         if l:delInnerSpace > 0

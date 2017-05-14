@@ -313,6 +313,12 @@ fun! s:ExeCommand()
                 silent exe l:exe[0] . ' ' . l:path2file
                 call getText_auto#ChangeDir()
 
+            elseif l:subItem =~# '^\V??'
+                let l:special
+                \ = substitute(l:subItem, '^\V??\v(.*)$', '\1','')
+                let l:special = ioMessage_auto#DelSpace(l:special, '', 0)
+                silent exe l:special[0]
+
             else
                 if l:fileList
                     let s:collectMsg
