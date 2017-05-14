@@ -77,8 +77,7 @@ fun! s:InitVar()
 
     let l:error = 0
 
-    if exists('g:path2FileList_quickEdit')
-        \&& exists('g:path2FileList_quickEdit[''var''][1]')
+    if exists('g:path2FileList_quickEdit[''var''][1]')
         let l:path2Var
         \= ioMessage_auto#DelTrailSlash(
         \g:path2FileList_quickEdit['var'][0])
@@ -86,8 +85,8 @@ fun! s:InitVar()
         if filereadable(l:path2Var)
             silent exe 'source ' . l:path2Var
         endif
-        if !exists('g:path2FileList_quickEdit')
-            \|| !exists('g:path2FileList_quickEdit[''file''][1]')
+
+        if !exists('g:path2FileList_quickEdit[''file''][1]')
             \|| !exists('g:path2FileList_quickEdit[''var''][1]')
             \|| !exists('g:path2FileList_quickEdit[''arg''][1]')
 
@@ -121,10 +120,7 @@ fun! s:InitVar()
     endif
     let s:path_place = deepcopy(g:path2Placeholder_quickEdit)
 
-    let l:err_path = ioMessage_auto#SearchDictList(
-    \s:path_file['file'][0]
-    \, s:path_place, s:pattern['dict'], '\1', '\2')
-    let l:path = l:err_path[1]
+    let l:path = s:path_file['file'][0]
     let l:path = ioMessage_auto#DelTrailSlash(l:path)
 
     let s:path2FileList = l:path . '/' . s:path_file['file'][1]
@@ -133,8 +129,6 @@ fun! s:InitVar()
         \, '', s:echoMsg['path'][2])
         let s:storeMsg = ioMessage_auto#DebugOrError(s:storeMsg
         \, '', s:echoMsg['note'][1])
-        let s:storeMsg = ioMessage_auto#DebugOrError(s:storeMsg
-        \, '', s:echoMsg['note'][3])
 
         return
     endif
