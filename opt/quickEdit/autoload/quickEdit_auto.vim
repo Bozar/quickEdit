@@ -67,8 +67,10 @@ fun! s:InitVar()
     let s:dynArg = {}
     let s:dynArg['hasTab'] = 0
 
-    let s:collectMsg = {}
-    let s:collectMsg = ioMessage_auto#DebugOrError(s:collectMsg, '', '')
+    let s:storeMsg = {}
+    let s:storeMsg = ioMessage_auto#DebugOrError(s:storeMsg, '', '')
+    let s:storeFile = {}
+    let s:storeFile = ioMessage_auto#DebugOrError(s:storeFile, '', '')
 
     let l:error = 0
 
@@ -95,7 +97,7 @@ fun! s:InitVar()
     if l:error > 0
         let g:path2FileList_quickEdit
         \ = {'file': [], 'var': [], 'arg': []}
-        let s:collectMsg = ioMessage_auto#DebugOrError(s:collectMsg
+        let s:storeMsg = ioMessage_auto#DebugOrError(s:storeMsg
         \ , '', s:echoMsg['path'][1])
 
         let s:path2FileList = ''
@@ -124,11 +126,11 @@ fun! s:InitVar()
 
     let s:path2FileList = l:path . '/' . s:path_file['file'][1]
     if !filereadable(s:path2FileList)
-        let s:collectMsg = ioMessage_auto#DebugOrError(s:collectMsg
+        let s:storeMsg = ioMessage_auto#DebugOrError(s:storeMsg
         \ , '', s:echoMsg['path'][2])
-        let s:collectMsg = ioMessage_auto#DebugOrError(s:collectMsg
+        let s:storeMsg = ioMessage_auto#DebugOrError(s:storeMsg
         \ , '', s:echoMsg['note'][1])
-        let s:collectMsg = ioMessage_auto#DebugOrError(s:collectMsg
+        let s:storeMsg = ioMessage_auto#DebugOrError(s:storeMsg
         \ , '', s:echoMsg['note'][3])
 
         return
@@ -149,35 +151,35 @@ fun! s:Range(keyword)
 
     if !empty(l:error)
         if index(l:error, 'start') > -1
-            let s:collectMsg = ioMessage_auto#DebugOrError(s:collectMsg
+            let s:storeMsg = ioMessage_auto#DebugOrError(s:storeMsg
             \ , '', s:echoMsg['range'][0])
-            let s:collectMsg = ioMessage_auto#DebugOrError(s:collectMsg
+            let s:storeMsg = ioMessage_auto#DebugOrError(s:storeMsg
             \ , '', s:echoMsg['note'][0])
 
         elseif index(l:error, 'end') > -1
-            let s:collectMsg = ioMessage_auto#DebugOrError(s:collectMsg
+            let s:storeMsg = ioMessage_auto#DebugOrError(s:storeMsg
             \ , '', s:echoMsg['range'][1])
 
         elseif index(l:error, 'duplicate') > -1
-            let s:collectMsg = ioMessage_auto#DebugOrError(s:collectMsg
+            let s:storeMsg = ioMessage_auto#DebugOrError(s:storeMsg
             \ , '', s:echoMsg['range'][2] . 'Line ' . l:errLine . '.')
 
         elseif index(l:error, 'loose') > -1
-            let s:collectMsg = ioMessage_auto#DebugOrError(s:collectMsg
+            let s:storeMsg = ioMessage_auto#DebugOrError(s:storeMsg
             \ , '', s:echoMsg['range'][3] . 'Line ' . l:errLine . '.')
         endif
 
-        let s:collectMsg = ioMessage_auto#DebugOrError(s:collectMsg
+        let s:storeMsg = ioMessage_auto#DebugOrError(s:storeMsg
         \ , '', s:echoMsg['note'][2])
         call getText_auto#OpenFile('close', s:path2FileList)
         return
 
     else
         let s:Range = l:range
-        let s:collectMsg = ioMessage_auto#DebugOrError(s:collectMsg
+        let s:storeMsg = ioMessage_auto#DebugOrError(s:storeMsg
         \ , s:echoMsg['subTitle'][0], '')
-        let s:collectMsg
-        \ = ioMessage_auto#DebugOrError(s:collectMsg, s:Range, '')
+        let s:storeMsg
+        \ = ioMessage_auto#DebugOrError(s:storeMsg, s:Range, '')
 
     endif
 endfun
@@ -195,10 +197,10 @@ fun! s:FileList()
     let l:item_split = ioMessage_auto#SplitList(l:noComment, l:idx_split)
     let l:item_split = filter(l:item_split, 'len(v:val) > 1')
 
-    let s:collectMsg = ioMessage_auto#DebugOrError(s:collectMsg
+    let s:storeMsg = ioMessage_auto#DebugOrError(s:storeMsg
     \ , s:echoMsg['subTitle'][1], '')
     for l:tmp in l:item_split
-        let s:collectMsg = ioMessage_auto#DebugOrError(s:collectMsg
+        let s:storeMsg = ioMessage_auto#DebugOrError(s:storeMsg
         \ , l:tmp, '')
     endfor
 
@@ -248,19 +250,19 @@ fun! s:CommandList()
 
     if !empty(l:error)
         let l:echoErr = '?' . l:error[0] . '.' . l:error[1]
-        let s:collectMsg = ioMessage_auto#DebugOrError(s:collectMsg
+        let s:storeMsg = ioMessage_auto#DebugOrError(s:storeMsg
         \ , '', s:echoMsg['path'][0] . l:echoErr . '''.')
-        let s:collectMsg = ioMessage_auto#DebugOrError(s:collectMsg
+        let s:storeMsg = ioMessage_auto#DebugOrError(s:storeMsg
         \ , '', s:echoMsg['note'][2])
-        let s:collectMsg = ioMessage_auto#DebugOrError(s:collectMsg
+        let s:storeMsg = ioMessage_auto#DebugOrError(s:storeMsg
         \ , '', s:echoMsg['note'][3])
         return
     endif
 
-    let s:collectMsg = ioMessage_auto#DebugOrError(s:collectMsg
+    let s:storeMsg = ioMessage_auto#DebugOrError(s:storeMsg
     \ , s:echoMsg['subTitle'][2], '')
     for l:item in l:commandList
-        let s:collectMsg = ioMessage_auto#DebugOrError(s:collectMsg
+        let s:storeMsg = ioMessage_auto#DebugOrError(s:storeMsg
         \ , l:item, '')
     endfor
 
@@ -294,7 +296,7 @@ endfun
 
 fun! s:ExeCommand()
     let l:command = deepcopy(s:CommandList)
-    let l:fileList = 1
+    let l:fileNotFound = 1
 
     for l:item in l:command
         let l:exe = remove(l:item, 0, 1)
@@ -314,21 +316,22 @@ fun! s:ExeCommand()
                 call getText_auto#ChangeDir()
 
             elseif l:subItem =~# '^\V??'
-                let l:special
+                let l:exeString
                 \ = substitute(l:subItem, '^\V??\v(.*)$', '\1','')
-                let l:special = ioMessage_auto#DelSpace(l:special, '', 0)
-                silent exe l:special[0]
+                let l:exeString
+                \ = ioMessage_auto#DelSpace(l:exeString, '', 0)
+                silent exe l:exeString[0]
 
             else
-                if l:fileList
-                    let s:collectMsg
-                    \ = ioMessage_auto#DebugOrError(s:collectMsg
+                if l:fileNotFound
+                    let s:storeFile
+                    \ = ioMessage_auto#DebugOrError(s:storeFile
                     \ , s:echoMsg['title'][4], '')
-                    let l:fileList = 0
+                    let l:fileNotFound = 0
                 endif
 
-                let s:collectMsg
-                \ = ioMessage_auto#DebugOrError(s:collectMsg
+                let s:storeFile
+                \ = ioMessage_auto#DebugOrError(s:storeFile
                 \ , l:path2file, '')
             endif
         endfor
@@ -362,10 +365,9 @@ fun! s:ConvertFileName(fileNameList)
 endfun
 
 fun! s:EchoDebugOrError(full)
-    let l:debugMsg = deepcopy(s:collectMsg['debug'])
-    let l:errorMsg = deepcopy(s:collectMsg['error'])
+    let l:debugMsg = deepcopy(s:storeMsg['debug'])
+    let l:errorMsg = deepcopy(s:storeMsg['error'])
     let l:value = deepcopy(s:echoMsg['subTitle'])
-    let l:idx = index(l:debugMsg, s:echoMsg['title'][4])
     let l:full = a:full
 
     if !empty(l:errorMsg) && l:full
@@ -375,11 +377,9 @@ fun! s:EchoDebugOrError(full)
         endfor
     endif
 
-    if l:idx > -1
-        let l:notFound = remove(l:debugMsg, l:idx, len(l:debugMsg) -1)
-        call remove(l:notFound, 0)
+    if !empty(s:storeFile['debug'])
         call ioMessage_auto#EchoHi(s:echoMsg['title'][4], 'Error')
-        for l:item in l:notFound
+        for l:item in s:storeFile['debug'][1:]
             echom l:item
         endfor
     endif
@@ -435,7 +435,7 @@ fun! quickEdit_auto#Main(...)
     endif
 
     for l:item in l:funs
-        if empty(s:collectMsg['error'])
+        if empty(s:storeMsg['error'])
             exe 'call ' . l:item
             if l:debug
                 echom l:item
@@ -446,7 +446,7 @@ fun! quickEdit_auto#Main(...)
                 call s:EchoDebugOrError(1)
             else
                 redraw
-                call ioMessage_auto#EchoHi(s:collectMsg['error'][0]
+                call ioMessage_auto#EchoHi(s:storeMsg['error'][0]
                 \ , 'Error')
             endif
             return
