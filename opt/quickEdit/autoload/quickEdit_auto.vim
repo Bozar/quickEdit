@@ -36,10 +36,12 @@ fun! s:LoadStaticVar()
     call add(s:echoMsg['path'], 'ERROR: FileList not found.')
 
     let s:echoMsg['note'] = []
-    call add(s:echoMsg['note'], 'NOTE: Check command argument(s).')
+    call add(s:echoMsg['note'], 'NOTE: Check command argument.')
     call add(s:echoMsg['note'], 'NOTE: Check g:fileList[''file''].')
     call add(s:echoMsg['note'], 'NOTE: Check fileList.')
     call add(s:echoMsg['note'], 'NOTE: Check ''g:placeHolder''.')
+    call add(s:echoMsg['note'], 'NOTE: A valid keyWord only contains '
+    \. 'alphabets, numbers or underlines.')
 
     let s:echoMsg['title'] = []
     call add(s:echoMsg['title'], '======Calling Function(s)======')
@@ -54,8 +56,10 @@ fun! s:LoadStaticVar()
     call add(s:echoMsg['subTitle'], '===s:FileList===')
     call add(s:echoMsg['subTitle'], '===s:CommandList===')
 
-    let s:echoMsg['function'] = []
-    call add(s:echoMsg['function'], 's:InitVar()')
+    let s:echoMsg['misc'] = []
+    call add(s:echoMsg['misc'], 's:InitVar()')
+    call add(s:echoMsg['misc']
+    \, 'Error: Invalid keyWord: ')
 
     let s:loadStaticVar = 1
 endfun
@@ -122,8 +126,8 @@ fun! s:InitVar()
 
     let l:path = s:path_file['file'][0]
     let l:path = ioMessage_auto#DelTrailSlash(l:path)
-
     let s:path2FileList = l:path . '/' . s:path_file['file'][1]
+
     if !filereadable(s:path2FileList)
         let s:storeMsg = ioMessage_auto#DebugOrError(s:storeMsg
         \, '', s:echoMsg['path'][2])
@@ -406,6 +410,26 @@ fun! s:EchoDebugOrError(full)
     endif
 endfun
 
+fun! quickEdit_auto#CompleteArg(arg, cmdLine, pos)
+    if exists('g:path2FileList_quickEdit[''comp''][0]')
+        let l:vaildArg = deepcopy(g:path2FileList_quickEdit['comp'])
+        let l:vaildArg = ioMessage_auto#DelSpace(l:vaildArg, '', 0)
+        if !empty(l:vaildArg)
+            let l:complete
+            \ = filter(copy(l:vaildArg), 'v:val =~? ''' . a:arg . '''')
+            if !empty(l:complete)
+                return l:complete
+            else
+                return l:vaildArg
+            endif
+        else
+            return []
+        endif
+    else
+        return []
+    endif
+endfun
+
 fun! quickEdit_auto#Main(...)
     call s:InitVar()
 
@@ -416,6 +440,14 @@ fun! quickEdit_auto#Main(...)
 
     let l:keyWord = ioMessage_auto#FilterList(l:argList
     \, l:filterFull, expand('<cword>'))
+    if l:keyWord !~? '^\v(\a|\d|_)+$'
+        let s:storeMsg = ioMessage_auto#DebugOrError(s:storeMsg
+        \, '', s:echoMsg['misc'][1] . '''' . l:keyWord . '''.')
+        let s:storeMsg = ioMessage_auto#DebugOrError(s:storeMsg
+        \, '', s:echoMsg['note'][4])
+        let s:storeMsg = ioMessage_auto#DebugOrError(s:storeMsg
+        \, '', s:echoMsg['note'][0])
+    endif
 
     let l:arg = ioMessage_auto#FilterList(l:argList
     \, l:filterTab, s:defArg['tab'])
@@ -439,8 +471,9 @@ fun! quickEdit_auto#Main(...)
     call add(l:funs, '')
 
     if l:debug
+        redraw
         call ioMessage_auto#EchoHi(s:echoMsg['title'][0], 'Type')
-        echom s:echoMsg['function'][0]
+        echom s:echoMsg['misc'][0]
     endif
 
     for l:item in l:funs

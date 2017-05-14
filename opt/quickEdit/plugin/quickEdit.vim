@@ -7,7 +7,8 @@ if !exists('g:commandName_tab_quickEdit')
     let g:commandName_tab_quickEdit = 'QuickEditTabPage'
 endif
 if !exists(':' . g:commandName_tab_quickEdit)
-    exe 'com! -nargs=* ' . g:commandName_tab_quickEdit
+    exe 'com! -nargs=* -complete=customlist,quickEdit_auto#CompleteArg '
+    \. g:commandName_tab_quickEdit
     \. ' call quickEdit_auto#Main(<f-args>)'
 endif
 
