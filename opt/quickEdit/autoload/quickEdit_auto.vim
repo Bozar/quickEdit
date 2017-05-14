@@ -43,8 +43,6 @@ fun! s:LoadStaticVar()
     call add(s:echoMsg['note'], 'NOTE: Check fileList.')
     call add(s:echoMsg['note']
     \, 'NOTE: Check ''g:path2Placeholder_quickEdit''.')
-    call add(s:echoMsg['note'], 'NOTE: A valid keyword only contains '
-    \. 'alphabets, numbers or underlines.')
 
     let s:echoMsg['title'] = []
     call add(s:echoMsg['title'], '======Calling Function(s)======')
@@ -59,10 +57,16 @@ fun! s:LoadStaticVar()
     call add(s:echoMsg['subTitle'], '===s:FileList===')
     call add(s:echoMsg['subTitle'], '===s:CommandList===')
 
-    let s:echoMsg['misc'] = []
-    call add(s:echoMsg['misc'], 's:InitVar()')
-    call add(s:echoMsg['misc']
-    \, 'Error: Invalid keyword: ')
+    let s:echoMsg['funs'] = []
+    call add(s:echoMsg['funs'], 's:InitVar()')
+    call add(s:echoMsg['funs'], 'quickEdit_auto#Main')
+    call add(s:echoMsg['funs'], ', process command args')
+    call add(s:echoMsg['funs'], ', break')
+
+    let s:echoMsg['keyword'] = []
+    call add(s:echoMsg['keyword'], 'Error: Invalid keyword: ')
+    call add(s:echoMsg['keyword'], 'NOTE: A valid keyword only contains '
+    \. 'alphabets, numbers or underlines.')
 
     let s:loadStaticVar = 1
 endfun
@@ -436,21 +440,33 @@ endfun
 
 fun! quickEdit_auto#Main(...)
     call s:InitVar()
+    if !empty(s:storeMsg['error'])
+        let l:breakpoint = [1, 0]
+    else
+        let l:breakpoint = [0, 0]
+    endif
 
     let l:argList = copy(a:000)
     let l:filterFull = 'v:val !~? ''' . s:pattern['full'] . ''''
     let l:filterTab = 'v:val =~? ''' . s:pattern['tab'] . ''''
     let l:filterBack = 'v:val =~? ''' . s:pattern['back'] . ''''
 
+    let l:argStr = string(a:000)
+    let l:argStr = substitute(l:argStr, '[', '(', '')
+    let l:argStr = substitute(l:argStr, ']', ')', '')
+    let l:mainFun = s:echoMsg['funs'][1] . l:argStr
+
     let l:keyword = ioMessage_auto#FilterList(l:argList
     \, l:filterFull, expand('<cword>'))
     if l:keyword !~? '^\v(\a|\d|_)+$'
         let s:storeMsg = ioMessage_auto#DebugOrError(s:storeMsg
-        \, '', s:echoMsg['misc'][1] . '''' . l:keyword . '''.')
+        \, '', s:echoMsg['keyword'][0] . '''' . l:keyword . '''.')
         let s:storeMsg = ioMessage_auto#DebugOrError(s:storeMsg
-        \, '', s:echoMsg['note'][4])
+        \, '', s:echoMsg['keyword'][1])
         let s:storeMsg = ioMessage_auto#DebugOrError(s:storeMsg
         \, '', s:echoMsg['note'][0])
+
+        let l:breakpoint[1] = 1
     endif
 
     let l:arg = ioMessage_auto#FilterList(l:argList
@@ -463,11 +479,11 @@ fun! quickEdit_auto#Main(...)
     let s:moveBack = ioMessage_auto#CheckCase(l:arg, 'l')
 
     let l:funs = []
-    call add(l:funs, 'getText_auto#OpenFile(''open'','''
+    call add(l:funs, 'getText_auto#OpenFile(''open'', '''
     \. s:path2FileList . ''')')
     call add(l:funs, 's:Range(''' . l:keyword . ''')')
     call add(l:funs, 's:FileList()')
-    call add(l:funs, 'getText_auto#OpenFile(''close'','''
+    call add(l:funs, 'getText_auto#OpenFile(''close'', '''
     \. s:path2FileList . ''')')
     call add(l:funs, 's:CommandList()')
     call add(l:funs, 's:Move2Tab()')
@@ -477,7 +493,18 @@ fun! quickEdit_auto#Main(...)
     if l:debug
         redraw
         call ioMessage_auto#EchoHi(s:echoMsg['title'][0], 'Type')
-        echom s:echoMsg['misc'][0]
+        if (l:breakpoint[0] == 0)
+            echom s:echoMsg['funs'][0]
+        elseif (l:breakpoint[0] == 1)
+            echom s:echoMsg['funs'][0] . s:echoMsg['funs'][3]
+        endif
+        if (l:breakpoint[0] == 0)
+            if (l:breakpoint[1] == 0)
+                echom l:mainFun . s:echoMsg['funs'][2]
+            elseif (l:breakpoint[1] == 1)
+                echom l:mainFun . s:echoMsg['funs'][3]
+            endif
+        endif
     endif
 
     for l:item in l:funs
