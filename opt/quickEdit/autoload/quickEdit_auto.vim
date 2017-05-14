@@ -375,7 +375,7 @@ fun! s:EchoDebugOrError(full)
     let l:value = deepcopy(s:echoMsg['subTitle'])
     let l:full = a:full
 
-    if !empty(l:errorMsg) && l:full
+    if !empty(l:errorMsg)
         call ioMessage_auto#EchoHi(s:echoMsg['title'][1], 'Error')
         for l:item in l:errorMsg
             echom l:item
@@ -465,19 +465,7 @@ fun! quickEdit_auto#Main(...)
                 call s:EchoDebugOrError(1)
             else
                 redraw
-                if !empty(l:errMsg)
-                    call ioMessage_auto#EchoHi(s:echoMsg['title'][1]
-                    \ , 'Error')
-                    for l:item in l:errMsg
-                        echom l:item
-                    endfor
-                elseif !empty(l:errFile)
-                    call ioMessage_auto#EchoHi(s:echoMsg['title'][4]
-                    \ , 'Error')
-                    for l:item in l:errFile
-                        echom l:item
-                    endfor
-                endif
+                call s:EchoDebugOrError(0)
             endif
             return
         endif
@@ -485,9 +473,6 @@ fun! quickEdit_auto#Main(...)
 
     if l:debug
         call s:EchoDebugOrError(1)
-    else
-        redraw
-        call s:EchoDebugOrError(0)
     endif
 endfun
 
