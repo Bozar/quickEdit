@@ -33,7 +33,7 @@ fun! s:LoadStaticVar()
     let s:echoMsg['path'] = []
     call add(s:echoMsg['path'], 'ERROR: Incorrect placeholder: ''')
     call add(s:echoMsg['path']
-    \, 'ERROR: Incorrect g:path2FileList_quickEdit[''file''].')
+    \, 'ERROR: Incorrect g:path2FileList_quickEdit.')
     call add(s:echoMsg['path'], 'ERROR: FileList not found.')
 
     let s:echoMsg['note'] = []
@@ -109,7 +109,7 @@ fun! s:InitVar()
 
     if l:error > 0
         let g:path2FileList_quickEdit
-        \= {'file': [], 'var': [], 'arg': []}
+        \= {'file':['',''], 'var':['',''], 'arg':['',''], 'comp':[]}
         let s:storeMsg = ioMessage_auto#DebugOrError(s:storeMsg
         \, '', s:echoMsg['path'][1])
 
