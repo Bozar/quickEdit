@@ -33,7 +33,7 @@ fun! s:LoadStaticVar()
     let s:echoMsg['path'] = []
     call add(s:echoMsg['path'], 'ERROR: Incorrect placeholder: ''')
     call add(s:echoMsg['path']
-    \, 'ERROR: Incorrect g:path2FileList_quickEdit.')
+    \, 'ERROR: Incorrect g:path2FileList_quickEdit[''file''].')
     call add(s:echoMsg['path'], 'ERROR: FileList not found.')
 
     let s:echoMsg['note'] = []
@@ -89,25 +89,15 @@ fun! s:InitVar()
     let l:error = 0
 
     if exists('g:path2FileList_quickEdit[''var''][1]')
-        let l:path2Var
-        \= ioMessage_auto#DelTrailSlash(
+        let l:path2Var = ioMessage_auto#DelTrailSlash(
         \g:path2FileList_quickEdit['var'][0])
         \. '/' . g:path2FileList_quickEdit['var'][1]
         if filereadable(l:path2Var)
             silent exe 'source ' . l:path2Var
         endif
-
-        if !exists('g:path2FileList_quickEdit[''file''][1]')
-            \|| !exists('g:path2FileList_quickEdit[''var''][1]')
-            \|| !exists('g:path2FileList_quickEdit[''arg''][1]')
-
-            let l:error = 1
-        endif
-    else
-        let l:error = 1
     endif
 
-    if l:error > 0
+    if !exists('g:path2FileList_quickEdit[''file''][1]')
         let g:path2FileList_quickEdit
         \= {'file':['',''], 'var':['',''], 'arg':['',''], 'comp':[]}
         let s:storeMsg = ioMessage_auto#DebugOrError(s:storeMsg
@@ -119,10 +109,12 @@ fun! s:InitVar()
 
     let s:path_file = deepcopy(g:path2FileList_quickEdit)
 
-    if (s:path_file['arg'][0] =~? s:pattern['tab'])
+    if exists('s:path_file[''arg''][0]')
+        \&& (s:path_file['arg'][0] =~? s:pattern['tab'])
         let s:defArg['tab'] = s:path_file['arg'][0]
     endif
-    if (s:path_file['arg'][1] =~? s:pattern['back'])
+    if exists('s:path_file[''arg''][1]')
+        \&& (s:path_file['arg'][1] =~? s:pattern['back'])
         let s:defArg['back'] = s:path_file['arg'][1]
     endif
 
