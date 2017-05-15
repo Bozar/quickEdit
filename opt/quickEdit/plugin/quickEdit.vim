@@ -12,7 +12,6 @@ if !exists(':' . g:commandName_QuickEditTabPage)
     \. g:commandName_QuickEditTabPage
     \. ' call quickEdit_auto#Main(<f-args>)'
 else
-    redraw
     echom '======quickEdit.vim Plugin======'
     echom 'ERROR: ''' . g:commandName_QuickEditTabPage
     \. ''' already exists.'

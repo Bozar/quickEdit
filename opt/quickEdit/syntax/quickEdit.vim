@@ -1,10 +1,10 @@
 syntax case ignore
 
 syntax match qeKeyword /\v^\s*[0-9a-zA-Z_]+\ze\s+\{\s*$/
-syntax match qeBracket /\v\s+\{\s*$/
-syntax match qeBracket /\v^\s*\}\s*$/
-syntax match qeCommand /\v^\s*#(EDIT|TABE):.*/ contains=qePath
-syntax match qePath /\v^\s*#(EDIT|TABE):\s*\zs.*/ contained
+syntax match qeBracket /\v\s+\zs\{\s*$/
+syntax match qeBracket /\v^\s*\zs\}\s*$/
+syntax match qeCommand /\v^\s*#(EDIT|TABE):.*$/ contains=qePath
+syntax match qePath /\v^\s*#(EDIT|TABE):\s*\zs.*$/ contained
 syntax match qePlaceHolder /\v^\s*\?\s*[^?].*$/
 syntax match qeExeString /\v^\s*\?{2}\s*.*$/
 syntax match qeComment /\v^\s*\/.*$/
