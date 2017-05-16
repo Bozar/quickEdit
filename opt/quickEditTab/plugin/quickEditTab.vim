@@ -8,9 +8,10 @@ if !exists('g:commandName_QuickEditTabPage')
 endif
 
 if !exists(':' . g:commandName_QuickEditTabPage)
-    exe 'com! -nargs=* -complete=customlist,quickEdit_auto#CompleteArg '
+    exe
+    \ 'com! -nargs=* -complete=customlist,quickEditTab_auto#CompleteArg '
     \. g:commandName_QuickEditTabPage
-    \. ' call quickEdit_auto#Main(<f-args>)'
+    \. ' call quickEditTab_auto#Main(<f-args>)'
 else
     echom '======quickEdit.vim Plugin======'
     echom 'ERROR: ''' . g:commandName_QuickEditTabPage

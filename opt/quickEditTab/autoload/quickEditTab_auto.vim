@@ -410,7 +410,7 @@ fun! s:EchoDebugOrError(full)
     endif
 endfun
 
-fun! quickEdit_auto#CompleteArg(arg, cmdLine, pos)
+fun! quickEditTab_auto#CompleteArg(arg, cmdLine, pos)
     if exists('g:path2FileList_quickEdit[''comp''][0]')
         let l:vaildArg = deepcopy(g:path2FileList_quickEdit['comp'])
         let l:vaildArg = ioMessage_auto#DelSpace(l:vaildArg, '', 0)
@@ -430,7 +430,7 @@ fun! quickEdit_auto#CompleteArg(arg, cmdLine, pos)
     endif
 endfun
 
-fun! quickEdit_auto#Main(...)
+fun! quickEditTab_auto#Main(...)
     call s:InitVar()
     if !empty(s:storeMsg['error'])
         let l:breakpoint = 1
