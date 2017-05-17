@@ -33,16 +33,16 @@ fun! s:LoadStaticVar()
     let s:echoMsg['path'] = []
     call add(s:echoMsg['path'], 'ERROR: Incorrect placeholder: ''')
     call add(s:echoMsg['path']
-    \, 'ERROR: Incorrect g:path2FileList_quickEdit[''file''].')
+    \, 'ERROR: Incorrect g:path2FileList_quickEditTab[''file''].')
     call add(s:echoMsg['path'], 'ERROR: FileList not found.')
 
     let s:echoMsg['note'] = []
     call add(s:echoMsg['note'], 'NOTE: Check command argument(s).')
     call add(s:echoMsg['note']
-    \, 'NOTE: Check g:path2FileList_quickEdit[''file''].')
+    \, 'NOTE: Check g:path2FileList_quickEditTab[''file''].')
     call add(s:echoMsg['note'], 'NOTE: Check fileList.')
     call add(s:echoMsg['note']
-    \, 'NOTE: Check ''g:path2Placeholder_quickEdit''.')
+    \, 'NOTE: Check ''g:path2Placeholder_quickEditTab''.')
 
     let s:echoMsg['headTail'] = []
     call add(s:echoMsg['headTail'], '======Break point======')
@@ -88,17 +88,17 @@ fun! s:InitVar()
 
     let l:error = 0
 
-    if exists('g:path2FileList_quickEdit[''var''][1]')
+    if exists('g:path2FileList_quickEditTab[''var''][1]')
         let l:path2Var = ioMessage_auto#DelTrailSlash(
-        \g:path2FileList_quickEdit['var'][0])
-        \. '/' . g:path2FileList_quickEdit['var'][1]
+        \g:path2FileList_quickEditTab['var'][0])
+        \. '/' . g:path2FileList_quickEditTab['var'][1]
         if filereadable(l:path2Var)
             silent exe 'source ' . l:path2Var
         endif
     endif
 
-    if !exists('g:path2FileList_quickEdit[''file''][1]')
-        let g:path2FileList_quickEdit
+    if !exists('g:path2FileList_quickEditTab[''file''][1]')
+        let g:path2FileList_quickEditTab
         \= {'file':['',''], 'var':['',''], 'arg':['',''], 'comp':[]}
         let s:storeMsg = ioMessage_auto#DebugOrError(s:storeMsg
         \, '', s:echoMsg['path'][1])
@@ -107,7 +107,7 @@ fun! s:InitVar()
         return
     endif
 
-    let s:path_file = deepcopy(g:path2FileList_quickEdit)
+    let s:path_file = deepcopy(g:path2FileList_quickEditTab)
 
     if exists('s:path_file[''arg''][0]')
         \&& (s:path_file['arg'][0] =~? s:pattern['tab'])
@@ -118,10 +118,10 @@ fun! s:InitVar()
         let s:defArg['back'] = s:path_file['arg'][1]
     endif
 
-    if !exists('g:path2Placeholder_quickEdit')
-        let g:path2Placeholder_quickEdit = {}
+    if !exists('g:path2Placeholder_quickEditTab')
+        let g:path2Placeholder_quickEditTab = {}
     endif
-    let s:path_place = deepcopy(g:path2Placeholder_quickEdit)
+    let s:path_place = deepcopy(g:path2Placeholder_quickEditTab)
 
     let l:path = s:path_file['file'][0]
     let l:path = ioMessage_auto#DelTrailSlash(l:path)
@@ -411,8 +411,8 @@ fun! s:EchoDebugOrError(full)
 endfun
 
 fun! quickEditTab_auto#CompleteArg(arg, cmdLine, pos)
-    if exists('g:path2FileList_quickEdit[''comp''][0]')
-        let l:vaildArg = deepcopy(g:path2FileList_quickEdit['comp'])
+    if exists('g:path2FileList_quickEditTab[''comp''][0]')
+        let l:vaildArg = deepcopy(g:path2FileList_quickEditTab['comp'])
         let l:vaildArg = ioMessage_auto#DelSpace(l:vaildArg, '', 0)
         if !empty(l:vaildArg)
             let l:complete
