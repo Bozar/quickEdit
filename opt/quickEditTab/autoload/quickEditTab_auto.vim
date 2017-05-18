@@ -98,8 +98,6 @@ fun! s:InitVar()
     endif
 
     if !exists('g:path2FileList_quickEditTab[''file''][1]')
-        let g:path2FileList_quickEditTab
-        \= {'file':['',''], 'var':['',''], 'arg':['',''], 'comp':[]}
         let s:storeMsg = ioMessage_auto#DebugOrError(s:storeMsg
         \, '', s:echoMsg['path'][1])
 
@@ -365,6 +363,22 @@ fun! s:ConvertFileName(fileNameList)
     return [l:error, l:newFile]
 endfun
 
+fun! s:ConvertArgComp()
+    if exists('g:path2FileList_quickEditTab[''comp''][0]')
+        let l:vaildArg = deepcopy(g:path2FileList_quickEditTab['comp'])
+        let l:vaildArg = ioMessage_auto#DelSpace(l:vaildArg, '', 1)
+        let l:vaildArg = sort(l:vaildArg, 'i')
+        let l:vaildArg = uniq(l:vaildArg, 'i')
+        if !empty(l:vaildArg)
+            return l:vaildArg
+        else
+            return []
+        endif
+    else
+        return []
+    endif
+endfun
+
 fun! s:EchoDebugOrError(full)
     let l:debugMsg = deepcopy(s:storeMsg['debug'])
     let l:errorMsg = deepcopy(s:storeMsg['error'])
@@ -411,19 +425,14 @@ fun! s:EchoDebugOrError(full)
 endfun
 
 fun! quickEditTab_auto#CompleteArg(arg, cmdLine, pos)
-    if exists('g:path2FileList_quickEditTab[''comp''][0]')
-        let l:vaildArg = deepcopy(g:path2FileList_quickEditTab['comp'])
-        let l:vaildArg = ioMessage_auto#DelSpace(l:vaildArg, '', 0)
-        if !empty(l:vaildArg)
-            let l:complete
-            \ = filter(copy(l:vaildArg), 'v:val =~? ''' . a:arg . '''')
-            if !empty(l:complete)
-                return l:complete
-            else
-                return l:vaildArg
-            endif
+    let l:vaildArg = s:ConvertArgComp()
+    if !empty(l:vaildArg)
+        let l:complete
+        \ = filter(copy(l:vaildArg), 'v:val =~? ''' . a:arg . '''')
+        if !empty(l:complete)
+            return l:complete
         else
-            return []
+            return l:vaildArg
         endif
     else
         return []
