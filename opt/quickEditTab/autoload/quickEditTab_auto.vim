@@ -89,6 +89,7 @@ fun! s:InitVar()
     let l:error = 0
 
     if exists('g:path2FileList_quickEditTab[''var''][1]')
+        \&& (type(g:path2FileList_quickEditTab['var']) ==? v:t_list)
         let l:path2Var = ioMessage_auto#DelTrailSlash(
         \g:path2FileList_quickEditTab['var'][0])
         \. '/' . g:path2FileList_quickEditTab['var'][1]
@@ -98,6 +99,7 @@ fun! s:InitVar()
     endif
 
     if !exists('g:path2FileList_quickEditTab[''file''][1]')
+        \|| (type(g:path2FileList_quickEditTab['file']) !=? v:t_list)
         let s:storeMsg = ioMessage_auto#DebugOrError(s:storeMsg
         \, '', s:echoMsg['path'][1])
 
@@ -108,15 +110,18 @@ fun! s:InitVar()
     let s:path_file = deepcopy(g:path2FileList_quickEditTab)
 
     if exists('s:path_file[''arg''][0]')
+        \&& (type(g:path2FileList_quickEditTab['arg']) ==? v:t_list)
         \&& (s:path_file['arg'][0] =~? s:pattern['tab'])
         let s:defArg['tab'] = s:path_file['arg'][0]
     endif
     if exists('s:path_file[''arg''][1]')
+        \&& (type(g:path2FileList_quickEditTab['arg']) ==? v:t_list)
         \&& (s:path_file['arg'][1] =~? s:pattern['back'])
         let s:defArg['back'] = s:path_file['arg'][1]
     endif
 
     if !exists('g:path2Placeholder_quickEditTab')
+        \|| (type(g:path2Placeholder_quickEditTab) !=? v:t_dict)
         let g:path2Placeholder_quickEditTab = {}
     endif
     let s:path_place = deepcopy(g:path2Placeholder_quickEditTab)
