@@ -1,0 +1,45 @@
+/ vim: set filetype=quickEditTab :
+
+vim {
+    #EDIT: ./
+        fileList
+    #TABE: $VIMRUNTIME
+        vimrc_example.vim
+}
+
+xFiles {
+    #EDIT: ./
+        I_Want_To_Sleep
+        The_Beginner_s_Guide_To_Dominate_Human_For_Tabbies
+    #TABE: ./
+        BMO_s_Miraculous_Odyssey
+}
+
+myVars {
+    #EDIT: ~\vimfiles\pack\quickEditTab\opt\quickEditTab\syntax
+        quickEditTab.vim
+    #TABE: ?loadVar.0
+        myVars.vim
+    #TABE: .
+        fileList
+}
+
+plugin {
+    /qETab.0: autoload
+    /qETab.1: plugin
+    #EDIT: ?qETab.1
+        quickEditTab.vim
+        ??wincmd s
+        ??call manageLayout_auto#ResizeWin('h', 1, 60)
+    #EDIT: ./
+        intro.md
+        ??normal! G
+        ??wincmd j
+    #TABE: ?qETab.0
+        /name.0: ioMessage_auto.vim
+        /name.1: getText_auto.vim
+        ?name.0
+        ?name.1
+        quickEditTab_auto.vim
+}
+

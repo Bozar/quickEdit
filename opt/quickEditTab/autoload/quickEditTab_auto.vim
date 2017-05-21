@@ -42,7 +42,7 @@ fun! s:LoadStaticVar()
     \, 'NOTE: Check g:path2FileList_quickEditTab[''file''].')
     call add(s:echoMsg['note'], 'NOTE: Check fileList.')
     call add(s:echoMsg['note']
-    \, 'NOTE: Check ''g:path2Placeholder_quickEditTab''.')
+    \, 'NOTE: Check g:path2Placeholder_quickEditTab.')
 
     let s:echoMsg['headTail'] = []
     call add(s:echoMsg['headTail'], '======Break point======')
