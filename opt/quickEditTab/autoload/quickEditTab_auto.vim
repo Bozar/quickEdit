@@ -370,8 +370,11 @@ endfun
 
 fun! s:ConvertArgComp()
     if exists('g:path2FileList_quickEditTab[''comp''][0]')
+        \&& (type(g:path2FileList_quickEditTab['comp']) ==? v:t_list)
         let l:vaildArg = deepcopy(g:path2FileList_quickEditTab['comp'])
         let l:vaildArg = ioMessage_auto#DelSpace(l:vaildArg, '', 1)
+        let l:vaildArg
+        \= filter(l:vaildArg, 'v:val =~? ''^\v(\a|\d|_)+$''')
         let l:vaildArg = sort(l:vaildArg, 'i')
         let l:vaildArg = uniq(l:vaildArg, 'i')
         if !empty(l:vaildArg)

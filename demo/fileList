@@ -1,0 +1,75 @@
+/ vim: set filetype=quickEditTab :
+/========================================
+/set filetype to enable syntax highlight
+/you can rely on the highlight to tell if the format is correct
+/========================================
+
+init {
+/========================================
+/the first line in a file group: {keyword} + {space} + {left bract}
+/lines between the keyword line and the first commnand line are ignored
+    THIS LINE IS IGNORED!
+/========================================
+
+    #EDIT: ?demo.0
+/========================================
+/   #{command}: + {path to files}
+/   only `edit` and `tabe` are valid commands
+/   commands are case incensitive
+/   paths including:
+/       absolute/relative paths (~/documents)
+/       environment variables ($VIMRUNTIME)
+/       placeholders (?demo.0), see Readme, Part C
+/========================================
+
+        fileList
+/========================================
+/   file name
+/   leave unchanged spaces or other special characters:
+/       hello (world).txt
+/========================================
+
+    #TABE: $VIMRUNTIME
+        vimrc_example.vim
+/========================================
+/   add another command line for:
+/       files in different paths
+/       files in the same path but different tabs
+/========================================
+
+/   #EDIT: ?demo.0
+/   ^^^^^^^^^^^^^^ igonred
+/   comments are always igonred
+/   #TABE: $VIMRUNTIME
+/   ^^^^^^^^^^^^^^^^^^ executed
+/       vimrc_example.vim
+/   if a command line is followed by other command lines
+/   all command lines excpet the last one are ignored
+/========================================
+
+}
+/========================================
+/the last line in a file group: {right bracket}
+/========================================
+
+winSplit {
+    #EDIT: ?demo.0
+        ?demo.1
+        ??wincmd s
+        ??wincmd j
+/========================================
+/   the string after `??` is executed:
+/       exe 'wincmd s'
+/   no need to escape single qoutes:
+/      ??call Test#MyFun('hello')
+/   spaces surrounding the string are deleted:
+/       `??     wincmd s    ` --> `??wincmd s`
+
+/   BEWARE:
+/       the `quickEditTab` script continues
+/           even when `??string` results in an error
+/       you'd better use `??string` just for
+/           splitting, resizing and jumping between windows
+/========================================
+}
+
