@@ -6,7 +6,7 @@
 
 ![image](https://github.com/Bozar/quickEditTab/blob/981deb8686104e946e74fd00b4d8ae3ba1ce62ba/demo/pluginDemo.gif)
 
-### A1: A Breif Introduction
+### A1: A Brief Introduction
 
 `QuickEditTab` provides a new command, `QuickEditTabPage`, to open files in the same or another tab according to a prdefined file list.  Two global variables, `g:path2FileList_quickEditTab` and `g:path2Placeholder_quickEditTab`, are added to store plugin settings.  The plugin requires Vim 8.0 or higher.
 
@@ -34,7 +34,7 @@ Unpack everything to this folder: `vimfiles/pack`.
 
 Follow these steps to execute `QuickEditTabPage` for the first time.
 
-Copy `fileList` (not `fileList_demo`) from `demo` to another folder, for example: `~/Documents/tmp`.
+Copy `fileList` (not `fileList_demo`) from `quickEditTab/demo` to another folder, for example: `~/Documents/tmp`.
 
 Add new lines to your `vimrc`:
 
@@ -49,7 +49,7 @@ Replace `####` with the path to `fileList`.
 
 Restart Vim and let the show begin.  `:QuickEditTabPage init`.
 
-If everything goes well (go to the end of B0 if an error occurs), you should see two tabs: `fileList` in Tab 1 and `vimrc_example.vim` in Tab 2.  Now go back to Tab 1, move cursor to `init` in Line 3, and execute the command with arguments.  `:QuickEditTabPage /b /i`.
+If everything goes well (go to the end of B0 if an error occurs), you should see two tabs: `fileList` in Tab 1 and `vimrc_example.vim` in Tab 2.  Now go back to Tab 1, move cursor to `init` in Line 7, and execute the command with arguments.  `:QuickEditTabPage /b /i`.
 
 The same two tabs are reopened and you are in the first tab.  Let's execute the command for the third time to peek behind the scenes.  `:QuickEditTabPage /C init`.
 
