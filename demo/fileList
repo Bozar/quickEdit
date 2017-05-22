@@ -16,6 +16,8 @@ init {
 /   #{command}: + {path to files}
 /   only `edit` and `tabe` are valid commands
 /   commands are case incensitive
+/       #EDIT: edit files in the current tab
+/       #TABE: edit files in another tab
 /   paths including:
 /       absolute/relative paths (~/documents)
 /       environment variables ($VIMRUNTIME)
@@ -53,7 +55,7 @@ init {
 /========================================
 
 winSplit {
-    #EDIT: ?demo.0
+    #TABE: ?demo.0
         ?demo.1
         ??wincmd s
         ??wincmd j
