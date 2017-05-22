@@ -71,6 +71,7 @@ If you receive an error message from `QuickEditTab` plugin when starting Vim, ad
 If you receive error messages when executing the command,
 
 >   `ERROR: Incorrect g:path2FileList_quickEditTab['file'].`
+>
 >   `======File(s) not Found======`
 
 make sure the path to `fileList` is correct.  Do not change anything except `####`.
