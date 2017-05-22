@@ -1,16 +1,16 @@
 # QuickEditTab Readme
 
-Part A: Quick Start Guide
+## Part A: Quick Start Guide
 
-## A0: Demo Gif
+### A0: Demo Gif
 
 ![image](https://github.com/Bozar/quickEditTab/blob/981deb8686104e946e74fd00b4d8ae3ba1ce62ba/demo/pluginDemo.gif)
 
-## A1: A Breif Introduction
+### A1: A Breif Introduction
 
 `QuickEditTab` provides a new command, `QuickEditTabPage`, to open files in the same or another tab according to a prdefined file list.  Two global variables, `g:path2FileList_quickEditTab` and `g:path2Placeholder_quickEditTab`, are added to store plugin settings.  The plugin requires Vim 8.0 or higher.
 
-## A2: How to Install
+### A2: How to Install
 
 Add different lines to your `vimrc` based on package managers.
 
@@ -28,9 +28,9 @@ Unpack everything to this folder: `vimfiles/pack`.
 
     packadd! quickEditTab
 
-Part B: Arguments, Variables and the File List
+## Part B: Arguments, Variables and the File List
 
-## B0: Execute the Command
+### B0: Execute the Command
 
 Follow these steps to execute `QuickEditTabPage` for the first time.
 
@@ -39,13 +39,13 @@ Copy `fileList` (not `fileList_demo`) from `demo` to another folder, for example
 Add new lines to your `vimrc`:
 
     let g:path2FileList_quickEditTab = {}
-    let g:path2FileList_quickEditTab['file'] = ['###', 'fileList']
+    let g:path2FileList_quickEditTab['file'] = ['####', 'fileList']
 
     let g:path2Placeholder_quickEditTab = {}
     let g:path2Placeholder_quickEditTab['demo']
     \= [g:path2FileList_quickEditTab['file'][0], 'fileList']
 
-Replace `###` with the path to `fileList`.
+Replace `####` with the path to `fileList`.
 
 Restart Vim and let the show begin.  `:QuickEditTabPage init`.
 
@@ -63,9 +63,9 @@ If you receive error messages when executing the command,
 *   `ERROR: Incorrect g:path2FileList_quickEditTab['file'].`
 *   `======File(s) not Found======`
 
-make sure the path to `fileList` is correct.  Do not change anything except `###`.
+make sure the path to `fileList` is correct.  Do not change anything except `####`.
 
-## B1: Command Arguments
+### B1: Command Arguments
 
 `QuickEditTabPage` requires three arguments: `back`, `tab` and `keyword`.  `Back` and `tab` are case sensitive.  `Keyword` is case insensitive.  All of them can be omitted.
 
@@ -89,7 +89,7 @@ The upper-case arguments show details when executing the command.
 When executing the command, arguments are checked from left to right.  The first argument that is not `back` or `tab` is recognized as `keyword`.  Otherwise, the cursor word (`<cword>`) is used.  The same procedure applies to `back` and `tab`.  Without `back` or `tab`, the default values are used, see B2.  For example, `QuickEditTabPage /B /i foo /a bar /b` equals to `QuickEditTabPage
 /B /i foo`.
 
-## B2: Global Variables, Part 1
+### B2: Global Variables, Part 1
 
 The global variable `g:path2FileList_quickEditTab`, `g:FileList` for short, is a Dictionary.  A Dictionary is composed of entries.  An entry has a key and a value.  The variable `g:FileList` has five entries.  Keys in `g:FileList` are defined by the plugin and cannot be changed.  Values in `g:FileList` are lists.  For example, you can set `g:FileList` like this:
 
@@ -114,7 +114,7 @@ Add this line to your `vimrc` to set default arguments:
 
 The first item in the list is argument `tab`: `/ciaCIA`.  The second item is argument `back`: `/bB`.  If `g:FileList['arg']` is not set or the argument is invalid, `['/c', '/B']` is used.
 
-## B3: The File List
+### B3: The File List
 
 Read comments in the `fileList` to get familiar with the structure of a file list:
 
@@ -129,7 +129,7 @@ A valid keyword only contains alphabets, numbers and/or underlines.  Keywords mu
 
 The `quickEditTab` plugin continues even when `??string` results in an error.  You'd better use `??string` just for splitting, resizing and jumping between windows.
 
-## B4: Global Variables, Part 2
+### B4: Global Variables, Part 2
 
 The file list is a txt file.  You can rename it and put it anywhere so long as the plugin can find it:
 
@@ -146,13 +146,13 @@ Keywords can be completed by setting `g:FileList['comp']`:
 
 All spaces in the keyword string are deleted.  Invalid keywords are deleted.  The remaining valid keywords are sorted.  If `g:FileList['comp']` is not set or there are no valid keywords, the argument completion does not work.
 
-Part C: Placeholders and Source the Script
+## Part C: Placeholders and Source the Script
 
-## C0: Placeholders
+### C0: Placeholders
 
 Placeholders are optional to the plugin.  They can make the file list easy to read and modify.  Both file paths and file names can be replaced by placeholders.  A placeholder begins with a single question mark, and then a key and an index, separated by a dot: `?key.index`.  The key and index points to an entry in `g:path2Placeholder_quickEditTab`, see C1.
 
-## C1: Global Variables, Part 3
+### C1: Global Variables, Part 3
 
 The global variable `g:path2Placeholder_quickEditTab`, `g:Place` for short, just like `g:FileList`, is a Dictionary.  There are no restrictions for keys and values in `g:Place`, except that the type of values must be a list.  As mentioned in C0, placeholders and `g:Place` are related.  Let's see an example:
 
