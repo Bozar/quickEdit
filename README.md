@@ -198,5 +198,5 @@ If `g:Place['var']` exists and the script is readable, it is sourced every time 
     source '{path to the script}' '{script name}'
 ```
 
-The Vim script `demo/myVars.vim` provides an example for loading variables.
+The Vim script `quickEditTab/demo/myVars.vim` provides an example for loading variables.
 
