@@ -274,6 +274,10 @@ fun! s:CommandList()
 endfun
 
 fun! s:Move2Tab()
+    if s:dynArg['hasTab'] == 0
+        return
+    endif
+
     if s:newTab ==# '/i'
         exe '1tabnext'
         let s:tabEdit = 0
