@@ -274,33 +274,28 @@ fun! s:CommandList()
 endfun
 
 fun! s:Move2Tab()
-    if s:dynArg['hasTab'] == 0
-        let s:tabStart = '.'
-        return
-    endif
-
     if s:newTab ==# '/i'
-        0tab split
-        let l:tabStart = 1
+        exe '1tabnext'
+        let s:tabEdit = 0
     elseif s:newTab ==# '/a'
-        $tab split
-        let l:tabStart = tabpagenr()
+        exe '$tabnext'
+        let s:tabEdit = -1
     elseif s:newTab ==# '/c'
         if (tabpagenr('$') > 1)
             tabo
         endif
-        let l:tabStart = 1
         if winnr('$') > 1
             wincmd o
         endif
+        let s:tabEdit = -1
     endif
-
-    let s:tabStart = l:tabStart
 endfun
 
 fun! s:ExeCommand()
     let l:command = deepcopy(s:CommandList)
     let l:idxItem = 0
+    let l:tabStart = '.'
+    let l:tabLoadOnce = 1
 
     for l:item in l:command
         let l:exe = remove(l:item, 0, 1)
@@ -310,14 +305,31 @@ fun! s:ExeCommand()
             let l:path2file = l:path_file . '/' . l:subItem
 
             if bufexists(l:path2file)
-                if l:exe[0] =~# 'edit'
+                if (l:exe[0] =~# 'edit')
                     silent exe 'buffer ' . bufname(l:path2file)
+                elseif (l:exe[0] =~# 'tabe') && (s:tabEdit > -1)
+                    silent exe s:tabEdit . 'tabe ' . bufname(l:path2file)
                 else
                     silent exe 'tabe ' . bufname(l:path2file)
                 endif
+                let s:tabEdit = -1
+                if l:tabLoadOnce
+                    let l:tabStart = tabpagenr()
+                    let l:tabLoadOnce = 0
+                endif
+
             elseif filereadable(l:path2file)
-                silent exe l:exe[0] . ' ' . l:path2file
+                if (l:exe[0] =~# 'tabe') && (s:tabEdit > -1)
+                    silent exe s:tabEdit . 'tabe ' . l:path2file
+                else
+                    silent exe l:exe[0] . ' ' . l:path2file
+                endif
                 call getText_auto#ChangeDir()
+                let s:tabEdit = -1
+                if l:tabLoadOnce
+                    let l:tabStart = tabpagenr()
+                    let l:tabLoadOnce = 0
+                endif
 
             elseif l:subItem =~# '^\V??'
                 let l:exeString
@@ -342,7 +354,7 @@ fun! s:ExeCommand()
     endfor
 
     if s:moveBack && s:dynArg['hasTab']
-        exe s:tabStart . 'tabnext'
+        exe l:tabStart . 'tabnext'
     endif
 endfun
 

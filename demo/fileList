@@ -64,12 +64,6 @@ winSplit {
 /      ??call Test#MyFun('hello')
 /   spaces surrounding the string are deleted:
 /       `??     wincmd s    ` --> `??wincmd s`
-
-/   BEWARE:
-/       the `quickEditTab` script continues
-/           even when `??string` results in an error
-/       you'd better use `??string` just for
-/           splitting, resizing and jumping between windows
 /========================================
 }
 
